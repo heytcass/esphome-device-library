@@ -1,0 +1,30 @@
+# ESPHome
+secrets.yaml
+*.bin
+.esphome/
+.pioenvs/
+.piolibdeps/
+
+# Nix
+.direnv/
+result
+result-*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+build/
+*.pyc
+__pycache__/
+
+# Logs
+*.log

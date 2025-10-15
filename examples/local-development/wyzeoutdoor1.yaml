@@ -1,0 +1,19 @@
+substitutions:
+  device_name: wyzeoutdoor1
+  friendly_name: "East Hydrangeas"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: false
+
+packages:
+  base: !include ../../common/base.yaml
+  platform: !include ../../common/esp32-platform.yaml
+  ble: !include ../../common/esp32-ble.yaml
+  diagnostics: !include ../../common/diagnostics.yaml
+  hardware: !include ../../devices/wyze/outdoor-plug.yaml
+
+wifi:
+  ap:
+    ssid: "${friendly_name} Fallback"

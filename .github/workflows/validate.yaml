@@ -1,0 +1,42 @@
+name: Validate ESPHome Configs
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        config:
+          - examples/local-development/wyzeoutdoor1.yaml
+          - examples/local-development/wyzeoutdoor2.yaml
+          - examples/local-development/wyzeoutdoor3.yaml
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install ESPHome
+        run: pip install esphome
+
+      - name: Create secrets.yaml
+        run: |
+          cat > secrets.yaml << EOF
+          wifi_ssid: "test-network"
+          wifi_password: "test-password"
+          api_encryption_key: "base64encodedkey1234567890abcdef="
+          ota_password: "test-ota-password"
+          ap_password: "test-ap-password"
+          EOF
+
+      - name: Validate ${{ matrix.config }}
+        run: esphome config ${{ matrix.config }}
