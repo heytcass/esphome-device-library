@@ -1,0 +1,22 @@
+# Sonoff S31 - ESPHome Project Configuration
+# For use with ESPHome Dashboard "Install" feature
+
+esphome:
+  name: sonoff-s31
+  friendly_name: Sonoff S31
+  name_add_mac_suffix: true
+
+dashboard_import:
+  package_import_url: github://heytcass/esphome-device-library/devices/sonoff/s31-project.yaml@main
+  import_full_config: false
+
+# User will be prompted for these
+wifi:
+  ap: {}
+
+# Include the hardware definition
+packages:
+  base: github://heytcass/esphome-device-library/common/base.yaml@main
+  platform: github://heytcass/esphome-device-library/common/esp8266-platform.yaml@main
+  diagnostics: github://heytcass/esphome-device-library/common/diagnostics.yaml@main
+  hardware: github://heytcass/esphome-device-library/devices/sonoff/s31.yaml@main

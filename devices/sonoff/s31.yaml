@@ -1,0 +1,118 @@
+# Sonoff S31 hardware definition
+# ESP8266-based smart plug with power monitoring
+
+esp8266:
+  board: esp01_1m
+
+# UART for CSE7766 power monitoring chip
+uart:
+  rx_pin: RX
+  baud_rate: 4800
+  parity: EVEN
+
+sensor:
+  - platform: cse7766
+    current:
+      name: "Current"
+      id: current
+      accuracy_decimals: 2
+      device_class: current
+      state_class: measurement
+      filters:
+        - lambda: |-
+            if (x < 0.060) return 0.0;
+            return x;
+
+    voltage:
+      name: "Voltage"
+      id: voltage
+      accuracy_decimals: 1
+      device_class: voltage
+      state_class: measurement
+
+    power:
+      name: "Power"
+      id: power
+      accuracy_decimals: 1
+      device_class: power
+      state_class: measurement
+      filters:
+        - lambda: |-
+            if (x < 1.0) return 0.0;
+            return x;
+
+    energy:
+      name: "Energy"
+      id: energy
+      accuracy_decimals: 2
+      device_class: energy
+      state_class: total_increasing
+      filters:
+        - multiply: 0.001
+
+  - platform: total_daily_energy
+    name: "Daily Energy"
+    power_id: power
+    unit_of_measurement: kWh
+    accuracy_decimals: 3
+    device_class: energy
+    state_class: total_increasing
+    filters:
+      - multiply: 0.001
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "Button"
+    id: button
+    entity_category: diagnostic
+    internal: true
+    filters:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+    on_press:
+      - switch.toggle: relay
+    on_click:
+      - min_length: 50ms
+        max_length: 500ms
+        then:
+          - switch.toggle: relay
+      - min_length: 2s
+        max_length: 5s
+        then:
+          - logger.log: "Button long press detected"
+
+switch:
+  - platform: gpio
+    name: "Outlet"
+    id: relay
+    pin: GPIO12
+    restore_mode: RESTORE_DEFAULT_OFF
+    on_turn_on:
+      - light.turn_on: led
+    on_turn_off:
+      - light.turn_off: led
+
+  - platform: restart
+    name: "Restart"
+    entity_category: diagnostic
+
+  - platform: safe_mode
+    name: "Safe Mode"
+    entity_category: diagnostic
+
+output:
+  - platform: gpio
+    pin: GPIO13
+    inverted: true
+    id: led_gpio
+
+light:
+  - platform: binary
+    name: "LED"
+    id: led
+    internal: true
+    output: led_gpio

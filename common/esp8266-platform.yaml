@@ -1,0 +1,8 @@
+# ESP8266 platform configuration
+# Works for all ESP8266 variants
+
+esp8266:
+  # board: set in device file
+  framework:
+    version: recommended
+  restore_from_flash: true

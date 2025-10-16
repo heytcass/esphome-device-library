@@ -132,6 +132,124 @@ _TODO: Add device photos, GPIO pinout diagram, opened case_
 
 ---
 
+## Sonoff S31
+
+### Overview
+Compact indoor smart plug with power monitoring and energy tracking.
+
+### Hardware Specifications
+
+**Chip:** ESP8266 (80MHz)
+**Flash:** 1MB
+**Power Monitoring:** CSE7766 (UART-based)
+**Buttons:** 1
+**Relays:** 1 (single outlet)
+**LEDs:** 1 (blue status LED)
+**Max Load:** 15A
+
+### GPIO Pinout
+
+| Component | GPIO | Notes |
+|-----------|------|-------|
+| Relay | GPIO12 | Controls outlet |
+| Button | GPIO0 | INPUT_PULLUP, inverted |
+| LED | GPIO13 | Inverted (active low) |
+| CSE7766 RX | GPIO3 (RX) | UART for power monitoring |
+| CSE7766 TX | GPIO1 (TX) | UART for power monitoring |
+
+### Features
+
+- ✅ **Power Monitoring** - Voltage, current, watts, energy (kWh)
+- ✅ **Energy Tracking** - Compatible with Home Assistant Energy Dashboard
+- ✅ **Physical Button** - Manual control with long-press detection
+- ✅ **Status LED** - Visual feedback for device state
+- ✅ **Restore Mode** - Configurable power-on behavior
+- ✅ **Compact Size** - Fits behind furniture easily
+- ⚠️ **No BLE** - ESP8266 doesn't support Bluetooth
+
+### Usage Example
+
+```yaml
+substitutions:
+  device_name: coffee-maker
+  friendly_name: "Coffee Maker"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+
+packages:
+  sonoff:
+    url: https://github.com/heytcass/esphome-device-library
+    ref: main
+    files:
+      - common/base.yaml
+      - common/esp8266-platform.yaml
+      - common/diagnostics.yaml
+      - devices/sonoff/s31.yaml
+    refresh: 1d
+
+wifi:
+  ap:
+    ssid: "${friendly_name} Fallback"
+```
+
+### Power Monitoring
+
+The CSE7766 chip provides accurate power monitoring via UART. The configuration includes automatic zero-threshold filtering to prevent phantom readings:
+
+- **Current:** Readings below 60mA are set to 0
+- **Power:** Readings below 1W are set to 0
+
+These thresholds eliminate noise when the outlet is off.
+
+### Known Issues
+
+- ⚠️ **UART Logging** - Serial logging is limited since RX/TX are used for power monitoring
+- ⚠️ **1MB Flash** - Limited space for complex configurations; web_server works but increases boot time
+
+### Flashing Instructions
+
+**Initial Flash (Serial Required):**
+
+**Method 1: With Header Pins (Recommended)**
+1. Open the device case (no screws, plastic clips)
+2. Locate the 4-pin header (usually unpopulated)
+3. Connect USB-to-TTL adapter:
+   - 3V3 → 3.3V
+   - RX → TX
+   - TX → RX
+   - GND → GND
+4. Hold the button while connecting power (enters flash mode)
+5. Flash with esphome: `esphome run sonoff-s31.yaml`
+
+**Method 2: Tasmota Convert (No Disassembly)**
+- Older firmware versions can use [Tasmota-Convert](https://github.com/ct-Open-Source/tasmota-convert) OTA method
+- Newer firmware requires serial flashing
+
+**Subsequent Updates:**
+- Over-the-air (OTA) via WiFi
+- No disassembly required
+
+### Purchase Links
+
+- [Amazon](https://www.amazon.com/s?k=sonoff+s31) (non-affiliate)
+- [Sonoff Official](https://sonoff.tech/) (check for latest hardware revision)
+- [AliExpress](https://www.aliexpress.com/w/wholesale-sonoff-s31.html) (direct from manufacturer)
+
+### Community Notes
+
+- **Tested ESPHome Versions:** 2024.11.0+
+- **Home Assistant Integration:** Excellent, all entities auto-discovered
+- **Reliability:** Very stable, widely used in the community
+- **Variants:** S31 Lite exists (no power monitoring, cheaper)
+
+### Photos
+
+_TODO: Add device photos, GPIO pinout diagram, opened case_
+
+---
+
 ## Adding More Devices
 
 Want to document a new device? See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.

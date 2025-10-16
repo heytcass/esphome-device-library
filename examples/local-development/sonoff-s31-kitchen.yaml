@@ -1,0 +1,18 @@
+substitutions:
+  device_name: sonoff-s31-kitchen
+  friendly_name: "Kitchen Counter"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: false
+
+packages:
+  base: !include ../../common/base.yaml
+  platform: !include ../../common/esp8266-platform.yaml
+  diagnostics: !include ../../common/diagnostics.yaml
+  hardware: !include ../../devices/sonoff/s31.yaml
+
+wifi:
+  ap:
+    ssid: "${friendly_name} Fallback"

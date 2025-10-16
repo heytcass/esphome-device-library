@@ -10,6 +10,7 @@ Community-maintained collection of ESPHome device configurations for popular sma
 | Device | Type | Features | Status |
 |--------|------|----------|--------|
 | [Wyze Outdoor Plug](devices/wyze/outdoor-plug.yaml) | Smart Plug | Power Monitoring, BLE Proxy, Dual Outlets | ✅ Stable |
+| [Sonoff S31](devices/sonoff/s31.yaml) | Smart Plug | Power Monitoring, Compact Design | ✅ Stable |
 
 ## 🚀 Quick Start
 

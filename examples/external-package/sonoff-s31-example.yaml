@@ -1,0 +1,23 @@
+substitutions:
+  device_name: my-sonoff-s31
+  friendly_name: "Coffee Maker"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: false
+
+packages:
+  base:
+    url: https://github.com/heytcass/esphome-device-library
+    ref: main  # or v1.0.0 for pinned version
+    files:
+      - common/base.yaml
+      - common/esp8266-platform.yaml
+      - common/diagnostics.yaml
+      - devices/sonoff/s31.yaml
+    refresh: 1d  # Check for updates daily
+
+wifi:
+  ap:
+    ssid: "${friendly_name} Fallback"
