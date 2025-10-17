@@ -116,3 +116,9 @@ light:
     id: led
     internal: true
     output: led_gpio
+
+# Web server for direct browser access
+web_server:
+  port: 80
+  version: 2
+  include_internal: false
