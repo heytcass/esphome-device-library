@@ -4,5 +4,5 @@
 esp32:
   # board: set in device file or hardware template
   framework:
-    type: esp-idf
-    # Using ESPHome defaults - no custom sdkconfig_options
+    type: arduino
+    # Arduino framework provides better compatibility across all ESP32 variants

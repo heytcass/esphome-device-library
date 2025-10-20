@@ -83,7 +83,7 @@ binary_sensor:
       mode: INPUT_PULLUP
       inverted: true
     name: "Button"
-    id: button
+    id: power_button
     entity_category: diagnostic
     internal: true
     filters:
