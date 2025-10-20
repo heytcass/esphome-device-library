@@ -2,6 +2,305 @@
 
 Complete specifications for all supported devices.
 
+## AirGradient ONE - Board v9
+
+### Overview
+Comprehensive air quality monitor measuring PM2.5, CO2, VOC, NOx, temperature, and humidity. Features an OLED display and WS2812 LED strip for visual feedback.
+
+### Hardware Specifications
+
+**Chip:** ESP32-C3 (Single-core RISC-V 160MHz)
+**Flash:** 4MB
+**Sensors:**
+- PMS5003 (Particulate Matter via UART)
+- SenseAir S8 (CO2 via UART)
+- SHT40 (Temperature/Humidity via I2C)
+- SGP41 (VOC/NOx via I2C)
+
+**Display:** SH1106 128x64 OLED (I2C)
+**LED:** WS2812 RGB strip (11 LEDs)
+**Connectivity:** WiFi 2.4GHz
+
+### GPIO Pinout
+
+| Component | GPIO | Notes |
+|-----------|------|-------|
+| SenseAir S8 RX | GPIO0 | UART for CO2 sensor |
+| SenseAir S8 TX | GPIO1 | UART for CO2 sensor |
+| Watchdog | GPIO2 | Device heartbeat |
+| I2C SCL | GPIO6 | SHT40, SGP41, OLED |
+| I2C SDA | GPIO7 | SHT40, SGP41, OLED |
+| LED Strip | GPIO10 | WS2812 (11 LEDs) |
+| PMS5003 RX | GPIO20 | UART for PM sensor |
+| PMS5003 TX | GPIO21 | UART for PM sensor |
+
+### Features
+
+- ✅ **PM2.5 Monitoring** - Real-time particulate matter with automatic AQI calculation
+- ✅ **CO2 Monitoring** - SenseAir S8 NDIR sensor (400-10000 ppm)
+- ✅ **VOC & NOx** - SGP41 sensor with temperature/humidity compensation
+- ✅ **Temperature & Humidity** - SHT40 high-accuracy sensor
+- ✅ **OLED Display** - Auto-rotating pages showing all measurements
+- ✅ **LED Indicators** - Color-coded CO2 levels (green→yellow→orange→red→purple→dark red)
+- ✅ **Calibration Controls** - Buttons for CO2 sensor calibration
+- ✅ **Temperature Units** - Toggle between °F and °C
+- ✅ **Web Server** - Built-in web interface for monitoring
+- ✅ **Watchdog** - Hardware watchdog for reliability
+- ⚠️ **No Serial Logging** - Both UARTs used by sensors
+
+### Usage Example
+
+```yaml
+substitutions:
+  device_name: airgradient-office
+  friendly_name: "Office Air Quality"
+  led_strip_brightness: "25%"  # Customize brightness
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+
+packages:
+  airgradient:
+    url: https://github.com/heytcass/esphome-device-library
+    ref: main
+    files:
+      - common/base.yaml
+      - common/esp32-platform.yaml
+      - common/diagnostics.yaml
+      - devices/airgradient/one-v9.yaml
+    refresh: 1d
+
+wifi:
+  ap:
+    ssid: "${friendly_name} Fallback"
+```
+
+### Sensor Details
+
+**PM2.5 (Particulate Matter):**
+- Readings in µg/m³
+- Automatic AQI (Air Quality Index) calculation
+- Update interval: 2 minutes
+- Also reports PM1.0, PM10.0, PM0.3
+
+**CO2 (Carbon Dioxide):**
+- Range: 400-10000 ppm
+- Clamped minimum at 400 ppm (atmospheric baseline)
+- Automatic background calibration available
+- LED strip shows color-coded levels:
+  - Green: <800 ppm (excellent)
+  - Yellow: 800-1000 ppm (good)
+  - Orange: 1000-1500 ppm (moderate)
+  - Red: 1500-2000 ppm (poor)
+  - Purple: 2000-3000 ppm (very poor)
+  - Dark Red: >3000 ppm (hazardous)
+
+**VOC & NOx:**
+- Index values (1-500)
+- Temperature and humidity compensated
+- Requires 12-hour conditioning period for accuracy
+
+**Temperature & Humidity:**
+- High accuracy (±0.2°C, ±2% RH)
+- Display toggle for °F/°C
+- Used for VOC/NOx compensation
+
+### Display Pages
+
+The OLED cycles through pages every 5 seconds:
+
+**Page 1:**
+- CO2 (ppm)
+- PM2.5 (µg/m³)
+- Temperature (°F or °C)
+- Humidity (%)
+
+**Page 2:**
+- CO2 (ppm)
+- PM2.5 (µg/m³)
+- VOC Index
+- NOx Index
+
+**Boot Page** (first 5 seconds):
+- Device MAC address
+- Device name
+
+### CO2 Calibration
+
+The SenseAir S8 sensor supports calibration:
+
+**Automatic Baseline Calibration (ABC):**
+- Enable: Use "Enable S8 Auto Calibration" button in Home Assistant
+- Assumes sensor sees 400 ppm regularly (fresh air)
+- Best for residential use
+
+**Manual Calibration:**
+1. Place sensor in fresh air (outdoors) for 20+ minutes
+2. Press "SenseAir S8 Calibration" button
+3. Wait 70 seconds for calibration to complete
+4. Best for commercial/lab use
+
+### Known Issues
+
+- ⚠️ **No Serial Logging** - Both ESP32-C3 UARTs are used, serial debugging unavailable
+- ⚠️ **SGP41 Conditioning** - VOC/NOx readings stabilize after 12 hours of operation
+- ⚠️ **Multiple Devices** - Sensor names may conflict; customize friendly_name for each unit
+
+### Flashing Instructions
+
+**Initial Flash (Serial Required):**
+
+1. Connect USB-C cable to AirGradient ONE
+2. Device appears as USB serial port
+3. No disassembly required
+4. Flash with esphome: `esphome run airgradient-one.yaml`
+
+**Subsequent Updates:**
+- Over-the-air (OTA) via WiFi
+- No cable required
+
+### Purchase Links
+
+- [AirGradient Official Store](https://www.airgradient.com/open-airgradient/instructions/overview/) (DIY kits and pre-assembled)
+- Open-source hardware with detailed build instructions
+
+### Community Notes
+
+- **Tested ESPHome Versions:** 2023.7.0+ (required)
+- **Home Assistant Integration:** Excellent, all sensors auto-discovered
+- **Reliability:** Very stable with watchdog enabled
+- **Accuracy:** Professional-grade sensors, suitable for air quality research
+- **Open Source:** Full schematics and build guide available
+- **Assembly:** DIY kit available, or purchase pre-assembled
+
+### Photos
+
+_TODO: Add device photos, GPIO pinout diagram, sensor locations_
+
+---
+
+## Athom Smart Plug V3 (PG01V3-EU16A)
+
+### Overview
+Compact EU smart plug with power monitoring based on ESP32-C3. Available pre-flashed with ESPHome.
+
+### Hardware Specifications
+
+**Chip:** ESP32-C3 (Single-core RISC-V 160MHz)
+**Flash:** 4MB
+**Power Monitoring:** CSE7766 (UART-based)
+**Buttons:** 1
+**Relays:** 1 (single outlet)
+**LEDs:** 1 (blue status LED)
+**Max Load:** 16A (EU) / 3680W
+**Voltage:** 230V AC (EU)
+
+### GPIO Pinout
+
+| Component | GPIO | Notes |
+|-----------|------|-------|
+| Relay | GPIO5 | Controls outlet |
+| Button | GPIO3 | INPUT_PULLUP, inverted |
+| Status LED | GPIO6 | Inverted (active low) |
+| CSE7766 RX | GPIO20 | UART for power monitoring |
+
+### Features
+
+- ✅ **Power Monitoring** - Voltage, current, watts, energy (kWh), power factor, apparent power
+- ✅ **Energy Tracking** - Compatible with Home Assistant Energy Dashboard
+- ✅ **Physical Button** - Manual control with 4-second long-press for restart
+- ✅ **Status LED** - Visual feedback for device state
+- ✅ **Restore Mode** - Configurable power-on behavior
+- ✅ **Compact Size** - Standard EU plug form factor
+- ✅ **Pre-flashed** - Available with ESPHome pre-installed from manufacturer
+- ✅ **Web Server** - Built-in web interface for monitoring
+- ⚠️ **No BLE** - ESP32-C3 configuration doesn't enable Bluetooth
+
+### Usage Example
+
+```yaml
+substitutions:
+  device_name: heater-plug
+  friendly_name: "Office Heater"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+
+packages:
+  athom:
+    url: https://github.com/heytcass/esphome-device-library
+    ref: main
+    files:
+      - common/base.yaml
+      - common/esp32-platform.yaml
+      - common/diagnostics.yaml
+      - devices/athom/pg01v3-eu.yaml
+    refresh: 1d
+
+wifi:
+  ap:
+    ssid: "${friendly_name} Fallback"
+```
+
+### Power Monitoring
+
+The CSE7766 chip provides accurate power monitoring via UART. The configuration includes automatic zero-threshold filtering to prevent phantom readings:
+
+- **Current:** Readings below 60mA are set to 0
+- **Power:** Readings below 1W are set to 0
+- **Additional metrics:** Power factor and apparent power for advanced monitoring
+
+These thresholds eliminate noise when the outlet is off.
+
+### Known Issues
+
+- ⚠️ **Regional Variants** - This config is for EU (16A) version; US and AU versions exist with different specs
+- ⚠️ **UART Logging** - Serial logging may be limited since UART is used for power monitoring
+
+### Flashing Instructions
+
+**Pre-flashed Option:**
+- Athom sells these devices pre-flashed with ESPHome
+- Simply adopt them in your ESPHome dashboard
+- No disassembly or serial connection required
+
+**Initial Flash (Serial Required) - If not pre-flashed:**
+
+1. Open the device case (remove screws)
+2. Locate the serial pads or header
+3. Connect USB-to-TTL adapter:
+   - 3V3 → 3.3V
+   - RX → TX
+   - TX → RX
+   - GND → GND
+4. Hold GPIO9 to GND while powering on (enters boot mode)
+5. Flash with esphome: `esphome run athom-plug.yaml`
+
+**Subsequent Updates:**
+- Over-the-air (OTA) via WiFi
+- No disassembly required
+
+### Purchase Links
+
+- [Athom Official Store](https://www.athom.tech/blank-1/esp32-c3-eu-plug-for-esphome) (pre-flashed available)
+- [AliExpress](https://www.aliexpress.com/w/wholesale-athom-smart-plug.html) (direct from manufacturer)
+
+### Community Notes
+
+- **Tested ESPHome Versions:** 2024.11.0+
+- **Home Assistant Integration:** Excellent, all entities auto-discovered
+- **Reliability:** Very stable, popular in the community
+- **Variants:** V2 exists (older ESP8266 version), V3 is ESP32-C3
+- **Regional Versions:** EU (16A), US (15A), AU (10A) variants available
+
+### Photos
+
+_TODO: Add device photos, GPIO pinout diagram, opened case_
+
+---
+
 ## Wyze Outdoor Plug
 
 ### Overview
