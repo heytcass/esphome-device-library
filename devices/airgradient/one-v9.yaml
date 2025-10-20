@@ -5,8 +5,6 @@
 esp32:
   board: esp32-c3-devkitm-1
   variant: ESP32C3
-  framework:
-    type: esp-idf
 
 # Disable serial logging - ESP32-C3 has only 2 UARTs and both are used by sensors
 logger:
@@ -179,20 +177,12 @@ sensor:
       humidity_source: humidity
 
 switch:
-  - platform: safe_mode
-    name: "Safe Mode"
-    entity_category: diagnostic
-
   - platform: template
     name: "Display Temperature in °F"
     icon: "mdi:thermometer"
     id: display_in_f
     restore_mode: RESTORE_DEFAULT_ON
     optimistic: true
-
-  - platform: restart
-    name: "Restart"
-    entity_category: diagnostic
 
 button:
   - platform: template
@@ -309,8 +299,3 @@ interval:
     then:
       - display.page.show_next: oled_display
       - component.update: oled_display
-
-# Web server for direct browser access
-web_server:
-  port: 80
-  version: 2

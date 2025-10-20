@@ -5,8 +5,6 @@
 esp32:
   board: esp32-c3-devkitm-1
   variant: ESP32C3
-  framework:
-    type: esp-idf
 
 # UART for CSE7766 power monitoring chip
 uart:
@@ -114,19 +112,10 @@ switch:
     on_turn_off:
       - light.turn_off: status_light
 
-  - platform: restart
-    name: "Restart"
-    entity_category: diagnostic
-
-  - platform: safe_mode
-    name: "Safe Mode"
-    entity_category: diagnostic
-
 button:
   - platform: restart
     id: restart_button
-    name: "Restart"
-    entity_category: diagnostic
+    internal: true  # Internal helper for button press, diagnostics has the user-facing restart
 
 output:
   - platform: gpio
@@ -141,9 +130,3 @@ light:
     id: status_light
     internal: true
     output: status_led
-
-# Web server for direct browser access
-web_server:
-  port: 80
-  version: 2
-  include_internal: false

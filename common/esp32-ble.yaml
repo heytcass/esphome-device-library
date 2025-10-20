@@ -10,3 +10,8 @@ esp32_ble_tracker:
 
 bluetooth_proxy:
   active: true
+
+# Modern BLE-based WiFi provisioning (ESPHome 2024+)
+# Works alongside improv_serial for dual provisioning options
+esp32_improv:
+  authorizer: none

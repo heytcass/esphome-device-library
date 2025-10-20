@@ -15,6 +15,7 @@ packages:
       - common/base.yaml
       - common/esp32-platform.yaml
       - common/diagnostics.yaml
+      - common/web-server.yaml
       - devices/athom/pg01v3-eu.yaml
     refresh: 1d  # Check for updates daily
 

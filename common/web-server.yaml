@@ -1,0 +1,7 @@
+# Optional web server for direct browser access
+# Include this package if you want a built-in web interface
+
+web_server:
+  port: 80
+  version: 2
+  include_internal: false
