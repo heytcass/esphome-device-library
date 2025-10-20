@@ -17,6 +17,7 @@ packages:
       - common/base.yaml
       - common/esp32-platform.yaml
       - common/diagnostics.yaml
+      - common/web-server.yaml
       - devices/airgradient/one-v9.yaml
     refresh: 1d  # Check for updates daily
 

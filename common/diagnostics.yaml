@@ -39,3 +39,9 @@ switch:
   - platform: safe_mode
     name: "Safe Mode"
     entity_category: diagnostic
+
+# Modern ESPHome 2025 feature - shows available firmware updates
+update:
+  - platform: esphome
+    name: "Firmware Update"
+    entity_category: diagnostic
