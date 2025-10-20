@@ -10,6 +10,17 @@ sensor:
     name: "Uptime"
     entity_category: diagnostic
 
+  - platform: debug
+    free:
+      name: "Heap Free"
+      entity_category: diagnostic
+    block_count:
+      name: "Heap Max Block"
+      entity_category: diagnostic
+    loop_time:
+      name: "Loop Time"
+      entity_category: diagnostic
+
 binary_sensor:
   - platform: status
     name: "Connection Status"
@@ -45,3 +56,7 @@ update:
   - platform: esphome
     name: "Firmware Update"
     entity_category: diagnostic
+
+# Debug component - shows free heap, block/loop time (ESPHome 2023+)
+debug:
+  update_interval: 30s

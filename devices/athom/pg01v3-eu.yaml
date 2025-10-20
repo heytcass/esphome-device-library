@@ -115,8 +115,7 @@ switch:
 button:
   - platform: restart
     id: restart_button
-    name: "Restart"
-    entity_category: diagnostic
+    internal: true  # Internal helper for button press, diagnostics has the user-facing restart
 
 output:
   - platform: gpio
