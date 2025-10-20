@@ -5,8 +5,6 @@
 esp32:
   board: esp32-c3-devkitm-1
   variant: ESP32C3
-  framework:
-    type: esp-idf
 
 # Disable serial logging - ESP32-C3 has only 2 UARTs and both are used by sensors
 logger:

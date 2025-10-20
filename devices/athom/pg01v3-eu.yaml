@@ -5,8 +5,6 @@
 esp32:
   board: esp32-c3-devkitm-1
   variant: ESP32C3
-  framework:
-    type: esp-idf
 
 # UART for CSE7766 power monitoring chip
 uart:
