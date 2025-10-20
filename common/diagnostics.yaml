@@ -30,3 +30,12 @@ text_sensor:
   - platform: version
     name: "ESPHome Version"
     entity_category: diagnostic
+
+switch:
+  - platform: restart
+    name: "Restart"
+    entity_category: diagnostic
+
+  - platform: safe_mode
+    name: "Safe Mode"
+    entity_category: diagnostic

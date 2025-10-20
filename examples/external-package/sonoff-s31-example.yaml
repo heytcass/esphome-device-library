@@ -15,6 +15,7 @@ packages:
       - common/base.yaml
       - common/esp8266-platform.yaml
       - common/diagnostics.yaml
+      - common/web-server.yaml
       - devices/sonoff/s31.yaml
     refresh: 1d  # Check for updates daily
 

@@ -11,6 +11,7 @@ packages:
   base: !include ../../common/base.yaml
   platform: !include ../../common/esp8266-platform.yaml
   diagnostics: !include ../../common/diagnostics.yaml
+  web_server: !include ../../common/web-server.yaml
   hardware: !include ../../devices/sonoff/s31.yaml
 
 wifi:

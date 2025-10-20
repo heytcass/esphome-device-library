@@ -96,14 +96,6 @@ switch:
     on_turn_off:
       - light.turn_off: led
 
-  - platform: restart
-    name: "Restart"
-    entity_category: diagnostic
-
-  - platform: safe_mode
-    name: "Safe Mode"
-    entity_category: diagnostic
-
 output:
   - platform: gpio
     pin: GPIO13
@@ -116,9 +108,3 @@ light:
     id: led
     internal: true
     output: led_gpio
-
-# Web server for direct browser access
-web_server:
-  port: 80
-  version: 2
-  include_internal: false

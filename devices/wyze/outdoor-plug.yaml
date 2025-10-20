@@ -180,14 +180,6 @@ switch:
     on_turn_off:
       - light.turn_off: relay2_led
 
-  - platform: restart
-    name: "Restart"
-    entity_category: diagnostic
-
-  - platform: safe_mode
-    name: "Safe Mode"
-    entity_category: diagnostic
-
 output:
   - platform: gpio
     pin: GPIO19
