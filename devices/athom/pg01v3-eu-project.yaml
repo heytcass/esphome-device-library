@@ -1,0 +1,22 @@
+# Athom Smart Plug V3 (PG01V3-EU16A) - ESPHome Project Configuration
+# For use with ESPHome Dashboard "Install" feature
+
+esphome:
+  name: athom-pg01v3-eu
+  friendly_name: Athom Smart Plug V3 EU
+  name_add_mac_suffix: true
+
+dashboard_import:
+  package_import_url: github://heytcass/esphome-device-library/devices/athom/pg01v3-eu-project.yaml@main
+  import_full_config: false
+
+# User will be prompted for these
+wifi:
+  ap: {}
+
+# Include the hardware definition
+packages:
+  base: github://heytcass/esphome-device-library/common/base.yaml@main
+  platform: github://heytcass/esphome-device-library/common/esp32-platform.yaml@main
+  diagnostics: github://heytcass/esphome-device-library/common/diagnostics.yaml@main
+  hardware: github://heytcass/esphome-device-library/devices/athom/pg01v3-eu.yaml@main

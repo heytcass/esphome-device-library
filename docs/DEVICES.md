@@ -2,6 +2,127 @@
 
 Complete specifications for all supported devices.
 
+## Athom Smart Plug V3 (PG01V3-EU16A)
+
+### Overview
+Compact EU smart plug with power monitoring based on ESP32-C3. Available pre-flashed with ESPHome.
+
+### Hardware Specifications
+
+**Chip:** ESP32-C3 (Single-core RISC-V 160MHz)
+**Flash:** 4MB
+**Power Monitoring:** CSE7766 (UART-based)
+**Buttons:** 1
+**Relays:** 1 (single outlet)
+**LEDs:** 1 (blue status LED)
+**Max Load:** 16A (EU) / 3680W
+**Voltage:** 230V AC (EU)
+
+### GPIO Pinout
+
+| Component | GPIO | Notes |
+|-----------|------|-------|
+| Relay | GPIO5 | Controls outlet |
+| Button | GPIO3 | INPUT_PULLUP, inverted |
+| Status LED | GPIO6 | Inverted (active low) |
+| CSE7766 RX | GPIO20 | UART for power monitoring |
+
+### Features
+
+- ✅ **Power Monitoring** - Voltage, current, watts, energy (kWh), power factor, apparent power
+- ✅ **Energy Tracking** - Compatible with Home Assistant Energy Dashboard
+- ✅ **Physical Button** - Manual control with 4-second long-press for restart
+- ✅ **Status LED** - Visual feedback for device state
+- ✅ **Restore Mode** - Configurable power-on behavior
+- ✅ **Compact Size** - Standard EU plug form factor
+- ✅ **Pre-flashed** - Available with ESPHome pre-installed from manufacturer
+- ✅ **Web Server** - Built-in web interface for monitoring
+- ⚠️ **No BLE** - ESP32-C3 configuration doesn't enable Bluetooth
+
+### Usage Example
+
+```yaml
+substitutions:
+  device_name: heater-plug
+  friendly_name: "Office Heater"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+
+packages:
+  athom:
+    url: https://github.com/heytcass/esphome-device-library
+    ref: main
+    files:
+      - common/base.yaml
+      - common/esp32-platform.yaml
+      - common/diagnostics.yaml
+      - devices/athom/pg01v3-eu.yaml
+    refresh: 1d
+
+wifi:
+  ap:
+    ssid: "${friendly_name} Fallback"
+```
+
+### Power Monitoring
+
+The CSE7766 chip provides accurate power monitoring via UART. The configuration includes automatic zero-threshold filtering to prevent phantom readings:
+
+- **Current:** Readings below 60mA are set to 0
+- **Power:** Readings below 1W are set to 0
+- **Additional metrics:** Power factor and apparent power for advanced monitoring
+
+These thresholds eliminate noise when the outlet is off.
+
+### Known Issues
+
+- ⚠️ **Regional Variants** - This config is for EU (16A) version; US and AU versions exist with different specs
+- ⚠️ **UART Logging** - Serial logging may be limited since UART is used for power monitoring
+
+### Flashing Instructions
+
+**Pre-flashed Option:**
+- Athom sells these devices pre-flashed with ESPHome
+- Simply adopt them in your ESPHome dashboard
+- No disassembly or serial connection required
+
+**Initial Flash (Serial Required) - If not pre-flashed:**
+
+1. Open the device case (remove screws)
+2. Locate the serial pads or header
+3. Connect USB-to-TTL adapter:
+   - 3V3 → 3.3V
+   - RX → TX
+   - TX → RX
+   - GND → GND
+4. Hold GPIO9 to GND while powering on (enters boot mode)
+5. Flash with esphome: `esphome run athom-plug.yaml`
+
+**Subsequent Updates:**
+- Over-the-air (OTA) via WiFi
+- No disassembly required
+
+### Purchase Links
+
+- [Athom Official Store](https://www.athom.tech/blank-1/esp32-c3-eu-plug-for-esphome) (pre-flashed available)
+- [AliExpress](https://www.aliexpress.com/w/wholesale-athom-smart-plug.html) (direct from manufacturer)
+
+### Community Notes
+
+- **Tested ESPHome Versions:** 2024.11.0+
+- **Home Assistant Integration:** Excellent, all entities auto-discovered
+- **Reliability:** Very stable, popular in the community
+- **Variants:** V2 exists (older ESP8266 version), V3 is ESP32-C3
+- **Regional Versions:** EU (16A), US (15A), AU (10A) variants available
+
+### Photos
+
+_TODO: Add device photos, GPIO pinout diagram, opened case_
+
+---
+
 ## Wyze Outdoor Plug
 
 ### Overview

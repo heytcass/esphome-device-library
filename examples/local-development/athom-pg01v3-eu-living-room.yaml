@@ -1,0 +1,18 @@
+substitutions:
+  device_name: athom-pg01v3-living-room
+  friendly_name: "Living Room Lamp"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: false
+
+packages:
+  base: !include ../../common/base.yaml
+  platform: !include ../../common/esp32-platform.yaml
+  diagnostics: !include ../../common/diagnostics.yaml
+  hardware: !include ../../devices/athom/pg01v3-eu.yaml
+
+wifi:
+  ap:
+    ssid: "${friendly_name} Fallback"

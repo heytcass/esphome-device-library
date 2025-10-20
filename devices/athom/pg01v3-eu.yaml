@@ -1,0 +1,149 @@
+# Athom Smart Plug V3 (PG01V3-EU16A) hardware definition
+# ESP32-C3-based smart plug with power monitoring
+# 16A max current for EU region
+
+esp32:
+  board: esp32-c3-devkitm-1
+  variant: ESP32C3
+  framework:
+    type: esp-idf
+
+# UART for CSE7766 power monitoring chip
+uart:
+  rx_pin: GPIO20
+  baud_rate: 4800
+  parity: EVEN
+
+sensor:
+  - platform: cse7766
+    current:
+      name: "Current"
+      id: current
+      accuracy_decimals: 2
+      device_class: current
+      state_class: measurement
+      filters:
+        - lambda: |-
+            if (x < 0.060) return 0.0;
+            return x;
+
+    voltage:
+      name: "Voltage"
+      id: voltage
+      accuracy_decimals: 1
+      device_class: voltage
+      state_class: measurement
+
+    power:
+      name: "Power"
+      id: power
+      accuracy_decimals: 1
+      device_class: power
+      state_class: measurement
+      filters:
+        - lambda: |-
+            if (x < 1.0) return 0.0;
+            return x;
+
+    energy:
+      name: "Energy"
+      id: energy
+      accuracy_decimals: 2
+      device_class: energy
+      state_class: total_increasing
+      filters:
+        - multiply: 0.001
+
+    apparent_power:
+      name: "Apparent Power"
+      id: apparent_power
+      accuracy_decimals: 1
+      device_class: apparent_power
+      state_class: measurement
+
+    power_factor:
+      name: "Power Factor"
+      id: power_factor
+      accuracy_decimals: 2
+      device_class: power_factor
+      state_class: measurement
+
+  - platform: total_daily_energy
+    name: "Daily Energy"
+    power_id: power
+    unit_of_measurement: kWh
+    accuracy_decimals: 3
+    device_class: energy
+    state_class: total_increasing
+    filters:
+      - multiply: 0.001
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO3
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "Button"
+    id: button
+    entity_category: diagnostic
+    internal: true
+    filters:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+    on_press:
+      - switch.toggle: relay
+    on_click:
+      - min_length: 50ms
+        max_length: 500ms
+        then:
+          - switch.toggle: relay
+      - min_length: 4s
+        max_length: 10s
+        then:
+          - button.press: restart_button
+
+switch:
+  - platform: gpio
+    name: "Outlet"
+    id: relay
+    pin: GPIO5
+    restore_mode: RESTORE_DEFAULT_OFF
+    on_turn_on:
+      - light.turn_on: status_light
+    on_turn_off:
+      - light.turn_off: status_light
+
+  - platform: restart
+    name: "Restart"
+    entity_category: diagnostic
+
+  - platform: safe_mode
+    name: "Safe Mode"
+    entity_category: diagnostic
+
+button:
+  - platform: restart
+    id: restart_button
+    name: "Restart"
+    entity_category: diagnostic
+
+output:
+  - platform: gpio
+    pin:
+      number: GPIO6
+      inverted: true
+    id: status_led
+
+light:
+  - platform: binary
+    name: "Status LED"
+    id: status_light
+    internal: true
+    output: status_led
+
+# Web server for direct browser access
+web_server:
+  port: 80
+  version: 2
+  include_internal: false
