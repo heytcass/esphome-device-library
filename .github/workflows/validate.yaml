@@ -17,6 +17,7 @@ jobs:
           - examples/local-development/wyzeoutdoor3.yaml
           - examples/local-development/sonoff-s31-kitchen.yaml
           - examples/local-development/athom-pg01v3-eu-living-room.yaml
+          - examples/local-development/airgradient-one-office.yaml
 
     steps:
       - name: Checkout repository

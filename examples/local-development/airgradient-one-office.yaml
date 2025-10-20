@@ -1,0 +1,20 @@
+substitutions:
+  device_name: airgradient-office
+  friendly_name: "Office Air Quality"
+  # Customize LED brightness (default: 25%)
+  led_strip_brightness: "20%"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: false
+
+packages:
+  base: !include ../../common/base.yaml
+  platform: !include ../../common/esp32-platform.yaml
+  diagnostics: !include ../../common/diagnostics.yaml
+  hardware: !include ../../devices/airgradient/one-v9.yaml
+
+wifi:
+  ap:
+    ssid: "${friendly_name} Fallback"
