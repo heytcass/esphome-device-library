@@ -222,7 +222,6 @@ light:
     rgb_order: GRB
     pin: GPIO10
     num_leds: 11
-    rmt_channel: 0
     chipset: ws2812
     name: "LED Strip"
     id: led_strip
@@ -231,14 +230,14 @@ font:
   - file:
       type: gfonts
       family: Poppins
-      weight: light
+      weight: 300
     id: poppins_light
     size: 14
     glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'
   - file:
       type: gfonts
       family: Poppins
-      weight: light
+      weight: 300
     id: poppins_light_12
     size: 12
     glyphs: '!"%()+=,-_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/µ³'

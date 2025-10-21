@@ -14,7 +14,7 @@ sensor:
     free:
       name: "Heap Free"
       entity_category: diagnostic
-    block_count:
+    block:
       name: "Heap Max Block"
       entity_category: diagnostic
     loop_time:
@@ -51,12 +51,13 @@ switch:
     name: "Safe Mode"
     entity_category: diagnostic
 
-# Modern ESPHome 2025 feature - shows available firmware updates
-update:
-  - platform: esphome
-    name: "Firmware Update"
-    entity_category: diagnostic
-
 # Debug component - shows free heap, block/loop time (ESPHome 2023+)
 debug:
   update_interval: 30s
+
+# Note: update.esphome platform is not yet available in stable releases
+# Uncomment when ESPHome supports it:
+# update:
+#   - platform: esphome
+#     name: "Firmware Update"
+#     entity_category: diagnostic
