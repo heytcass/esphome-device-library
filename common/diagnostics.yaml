@@ -55,9 +55,8 @@ switch:
 debug:
   update_interval: 30s
 
-# Note: update.esphome platform is not yet available in stable releases
-# Uncomment when ESPHome supports it:
-# update:
-#   - platform: esphome
-#     name: "Firmware Update"
-#     entity_category: diagnostic
+# Firmware update component (ESPHome 2024+)
+update:
+  - platform: esphome
+    name: "Firmware Update"
+    entity_category: diagnostic

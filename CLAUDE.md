@@ -2,250 +2,180 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Overview
+## Repository Purpose
 
-This is a community-maintained collection of ESPHome device configurations for popular smart home devices. The repository provides reusable, modular YAML configurations that can be imported as packages into user ESPHome setups.
+This is a modular ESPHome device library that follows strict DRY principles. Configurations are broken into reusable layers that can be mixed and matched via ESPHome's package system.
 
-## Development Environment
+## Core Architecture
 
-### NixOS Users (Recommended)
-The repository includes a Nix flake with all required tools. Enter the dev environment:
+### Five-Layer Package System
 
-```bash
-nix develop           # Manual shell entry
-direnv allow          # Automatic with direnv
+The architecture uses ESPHome's package inheritance system to avoid code duplication:
+
+```
+Layer 1: common/base.yaml          → Core services (WiFi, API, OTA, logger, time, mDNS)
+Layer 2: common/esp*-platform.yaml → Platform-specific framework config
+Layer 3: common/diagnostics.yaml   → Standard monitoring sensors
+Layer 4: devices/brand/model.yaml  → Hardware-specific GPIO/sensors
+Layer 5: Optional packages         → web-server.yaml, static-ip.yaml, esp32-ble.yaml
 ```
 
-Tools provided: `esphome`, `git`, `python`, `yamllint`
+**Critical Pattern**: Device configurations should NEVER contain duplicated services. If a component is needed by multiple devices, it belongs in `common/`.
 
-### Non-NixOS Users
-Install ESPHome via pip:
-```bash
-pip install esphome
+### Package Import Methods
+
+Two import methods are supported:
+
+1. **Local development** (`!include` directive):
+   ```yaml
+   packages:
+     base: !include ../../common/base.yaml
+     hardware: !include ../../devices/sonoff/s31.yaml
+   ```
+
+2. **External users** (GitHub URLs):
+   ```yaml
+   packages:
+     base:
+       url: https://github.com/heytcass/esphome-device-library
+       ref: main
+       files: [common/base.yaml, devices/sonoff/s31.yaml]
+       refresh: 1d
+   ```
+
+**Important**: Every device MUST have an example configuration in `examples/local-development/` for CI validation.
+
+### Dashboard Import Pattern (Optional)
+
+Devices can optionally include a `*-project.yaml` file for ESPHome Dashboard one-click installation:
+
+```yaml
+dashboard_import:
+  package_import_url: github://heytcass/esphome-device-library/devices/brand/model-project.yaml@main
+  import_full_config: false
+
+packages:
+  base: github://heytcass/esphome-device-library/common/base.yaml@main
+  hardware: github://heytcass/esphome-device-library/devices/brand/model.yaml@main
 ```
 
-## Common Commands
+This allows users to install directly from the ESPHome Dashboard without manually creating config files.
+
+### Secrets Management
+
+All sensitive data uses ESPHome's `!secret` directive:
+- `secrets.yaml.example` contains template with comments
+- `secrets.yaml` (gitignored) contains actual values
+- CI workflow creates minimal secrets for validation
+
+**First-time setup**:
+```bash
+cp secrets.yaml.example secrets.yaml
+# Edit secrets.yaml with your actual WiFi credentials and keys
+```
+
+## Essential Commands
 
 ### Validation
 ```bash
-# Validate a single configuration
-esphome config examples/local-development/wyzeoutdoor1.yaml
+# Validate single configuration
+esphome config examples/local-development/device-name.yaml
 
-# Validate all local examples
+# Validate all examples (mirrors CI)
 for file in examples/local-development/*.yaml; do
   esphome config "$file"
 done
 ```
 
-### Compilation
+### Compilation (Optional)
 ```bash
-# Compile firmware (doesn't flash)
-esphome compile examples/local-development/wyzeoutdoor1.yaml
+# Compile without flashing (verifies code generation)
+esphome compile examples/local-development/device-name.yaml
 
-# Check generated binary
-ls -lh .esphome/build/wyzeoutdoor1/.pioenvs/wyzeoutdoor1/firmware.bin
+# Output location: .esphome/build/device-name/.pioenvs/device-name/firmware.bin
 ```
 
-### CI Validation
-GitHub Actions validates all configs in `examples/local-development/` on push/PR.
+### Development Environment
 
-## Architecture
+**NixOS users**: Environment auto-loads via direnv (flake.nix provides esphome, yamllint, git)
 
-### Package Layer System
-
-The repository uses a hierarchical package structure that allows users to compose device configurations:
-
-```
-Layer 1: common/base.yaml
-├── Universal services: API, OTA, Logger, WiFi, mDNS, Safe Mode
-└── Platform-agnostic, works on ANY ESP device
-
-Layer 2: common/esp32-platform.yaml OR common/esp8266-platform.yaml
-├── ESP32/ESP8266 framework configuration
-└── Choose based on device chipset
-
-Layer 3: common/esp32-ble.yaml (optional)
-├── BLE tracker and bluetooth_proxy
-└── Only include for BLE-capable ESP32 devices
-
-Layer 4: common/diagnostics.yaml
-├── WiFi signal, uptime, restart count sensors
-└── Standard monitoring for all devices
-
-Layer 5: devices/brand/model.yaml
-├── Hardware-specific GPIO definitions
-├── Device-specific sensors (power monitoring, etc.)
-├── Switches, buttons, LEDs
-└── Board type (esp32dev, esp01_1m, etc.)
-```
-
-### Secrets Management
-
-The repository uses `!secret` references that resolve from:
-1. Local development: `secrets.yaml` (git-ignored, user-created from template)
-2. External package imports: User's own secrets in their ESPHome setup
-3. GitHub Actions: Generated dummy `secrets.yaml` for validation
-
-Required secrets:
-- `wifi_ssid`, `wifi_password`
-- `api_encryption_key`
-- `ota_password`
-- `ap_password`
-
-### Example Configuration Pattern
-
-Local development examples follow this pattern:
-
-```yaml
-substitutions:
-  device_name: unique-device-id
-  friendly_name: "Human Readable Name"
-
-esphome:
-  name: ${device_name}
-  friendly_name: ${friendly_name}
-
-packages:
-  base: !include ../../common/base.yaml
-  platform: !include ../../common/esp32-platform.yaml
-  ble: !include ../../common/esp32-ble.yaml          # Optional
-  diagnostics: !include ../../common/diagnostics.yaml
-  hardware: !include ../../devices/brand/model.yaml
-
-wifi:
-  ap:
-    ssid: "${friendly_name} Fallback"
-```
-
-External package imports use GitHub URLs instead of `!include`:
-```yaml
-packages:
-  device:
-    url: https://github.com/heytcass/esphome-device-library
-    ref: main
-    files:
-      - common/base.yaml
-      - devices/wyze/outdoor-plug.yaml
-```
-
-## Adding a New Device
-
-### File Structure
-For device "Brand Model X":
-```
-devices/
-  brand/
-    model-x.yaml           # Hardware configuration
-    model-x-project.yaml   # Dashboard import (optional)
-examples/
-  local-development/
-    model-x-test.yaml      # Local testing example
-  external-package/
-    model-x-example.yaml   # External import example
-```
-
-### Required Elements in Device YAML
-
-1. **Board specification**: Must be defined in device YAML
-   ```yaml
-   esp32:
-     board: esp32dev
-   ```
-
-2. **Substitutions**: For calibration values
-   ```yaml
-   substitutions:
-     current_res: "0.001"
-     voltage_div: "770"
-   ```
-
-3. **Hardware components**: GPIO pins, sensors, switches
-   - Use `entity_category: diagnostic` for technical sensors
-   - Use `internal: true` for hidden entities
-   - Use descriptive names (shown in Home Assistant)
-
-4. **Proper ESPHome entity configuration**:
-   - Include `device_class` and `state_class` for sensors
-   - Add `restore_mode` for switches
-   - Use filters for calibration and noise reduction
-
-### Validation Workflow
-
-1. Create device configuration in `devices/brand/model.yaml`
-2. Create example in `examples/local-development/test.yaml`
-3. Validate: `esphome config examples/local-development/test.yaml`
-4. Fix errors iteratively
-5. Add to CI: Update `.github/workflows/validate.yaml` matrix
-6. Document in `docs/DEVICES.md`
-
-## Code Style
-
-### YAML Conventions
-- 2 spaces for indentation
-- Lowercase keys
-- Descriptive entity names (Title Case)
-- `snake_case` for IDs and substitutions
-- `brand-model` for device names (lowercase, hyphenated)
-- Comment non-obvious configurations
-
-### Entity Naming
-- **name**: Human-readable, shows in Home Assistant ("Outlet 1", "Current")
-- **id**: Internal reference, snake_case (relay1, power_sensor)
-- Use `internal: true` to hide from Home Assistant
-- Use `entity_category: diagnostic` for technical info
-
-## Testing Checklist
-
-Before submitting a device configuration:
-- [ ] Configuration validates without errors
-- [ ] Tested on actual hardware
-- [ ] All entities appear in Home Assistant
-- [ ] Power monitoring calibrated (if applicable)
-- [ ] Buttons/switches work correctly
-- [ ] OTA updates work
-- [ ] Safe mode works
-
-## Common Pitfalls
-
-1. **Forgetting board type**: Device YAML must specify `esp32.board` or `esp8266.board`
-2. **Invalid GPIO pins**: Check device-specific pinout
-3. **Missing secrets**: Local dev requires `secrets.yaml` (never commit this)
-4. **Wrong platform layer**: ESP8266 devices need `esp8266-platform.yaml`, not `esp32-platform.yaml`
-5. **BLE on non-ESP32**: BLE only works on ESP32, not ESP8266
-
-## Git Workflow
-
-Always use the `git cc-commit-msg` command for commits (configured for YubiKey GPG signing):
-
+**Non-NixOS users**: Install ESPHome manually:
 ```bash
-git checkout -b add-new-device
-# Make changes
-esphome config examples/local-development/test.yaml
-git add .
-git cc-commit-msg "Add support for Brand Model X"
-git push origin add-new-device
+pip install esphome
 ```
 
-## Debugging
+## Key Patterns and Conventions
 
-### Clear ESPHome cache
-```bash
-rm -rf .esphome
-```
+### Adding New Devices
 
-### Verbose logging
-Add to test config:
-```yaml
-logger:
-  level: DEBUG
-```
+1. **Create hardware config**: `devices/brand/model.yaml`
+   - Define board type (esp32/esp8266/esp32c3)
+   - Define GPIO pins and device-specific sensors
+   - Use substitutions for calibration values
+   - Include `improv_serial` component for USB WiFi provisioning
+   - DO NOT include base services (WiFi, API, OTA) - those are in common/base.yaml
 
-### Check for hidden characters
-```bash
-cat -A file.yaml
-```
+2. **Create example config**: `examples/local-development/device-test.yaml`
+   - Include device-specific substitutions (device_name, friendly_name)
+   - Import all necessary packages (base + platform + hardware + optional)
+   - This is what CI will validate
 
-### Verify YAML syntax
-```bash
-python -c "import yaml; yaml.safe_load(open('file.yaml'))"
-```
+3. **Add to CI matrix**: `.github/workflows/validate.yaml`
+   - Add new example file to the matrix.config list
+
+4. **Document**: `docs/DEVICES.md`
+   - GPIO pinout table
+   - Calibration notes
+   - Feature list
+
+### Optional Packages
+
+Optional features are separate includes to keep base configs minimal:
+
+- `common/web-server.yaml` - Adds web UI on port 80
+- `common/static-ip.yaml` - For networks with mDNS issues (requires secrets: wifi_static_ip, wifi_gateway, wifi_subnet, wifi_dns1, wifi_dns2)
+- `common/esp32-ble.yaml` - BLE proxy and tracker (ESP32 only)
+
+Include these AFTER base.yaml to override/extend functionality.
+
+### Naming Conventions
+
+- **Files**: `brand-model.yaml` (lowercase, hyphenated)
+- **Device names**: `brand-model-location` (e.g., sonoff-s31-kitchen)
+- **Substitutions**: `snake_case`
+- **Entity IDs**: `snake_case`
+- **Friendly names**: Title Case (used in Home Assistant)
+
+### Entity Organization
+
+Follow ESPHome entity_category patterns:
+- `entity_category: diagnostic` - WiFi signal, uptime, IP address
+- `entity_category: config` - Configuration entities (restart button, safe mode)
+- No category - User-facing sensors/switches (power monitoring, relays)
+
+## CI Validation
+
+GitHub Actions validates all example configs on push/PR:
+- Matrix strategy tests each example independently
+- Creates dummy secrets.yaml for validation
+- Runs `esphome config` (validation only, no compilation)
+
+**When adding devices**: Always add corresponding example to CI matrix.
+
+## Common Gotchas
+
+1. **Platform-specific components**: Don't use ESP32-only components (like BLE) in ESP8266 devices
+2. **GPIO conflicts**: Check device pinouts carefully - some pins are reserved for flash/boot
+3. **Secrets in CI**: CI uses dummy values - validation doesn't need real WiFi credentials
+4. **Package order matters**: base.yaml should be first, hardware last, optionals can override
+5. **Static IP usage**: Requires both the package AND secrets - document when needed for specific network setups
+
+## Modern ESPHome Features (2025)
+
+This library uses current best practices:
+- `improv_serial` - USB WiFi provisioning (all devices)
+- `esp32_improv` - Bluetooth WiFi provisioning (ESP32 with BLE)
+- `update` component - Firmware update notifications in HA
+- `debug` component - Heap/loop time monitoring
+- `safe_mode` - Automatic fallback on boot failures
+- `captive_portal` - Fallback AP with setup portal
