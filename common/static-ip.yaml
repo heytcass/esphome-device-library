@@ -1,0 +1,26 @@
+# Optional Static IP Configuration Package
+#
+# Include this package if you need to assign static IP addresses to your devices.
+# This is useful when:
+# - mDNS (.local) resolution doesn't work reliably on your network
+# - You need consistent IP addresses for firewall rules or port forwarding
+# - OTA updates fail with "Error resolving IP address" errors
+#
+# Usage:
+# 1. Add the required secrets to your secrets.yaml file (see secrets.yaml.example)
+# 2. Include this package in your device configuration:
+#
+#    packages:
+#      static_ip: github://heytcass/esphome-device-library/common/static-ip.yaml@main
+#
+# Note: This configures the device to request a specific IP from your router.
+# Make sure to also reserve this IP in your router's DHCP settings to avoid conflicts.
+
+wifi:
+  # Static IP configuration
+  manual_ip:
+    static_ip: !secret wifi_static_ip
+    gateway: !secret wifi_gateway
+    subnet: !secret wifi_subnet
+    dns1: !secret wifi_dns1
+    dns2: !secret wifi_dns2
