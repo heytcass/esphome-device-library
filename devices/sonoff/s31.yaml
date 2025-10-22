@@ -63,6 +63,16 @@ sensor:
     filters:
       - multiply: 0.001
 
+text_sensor:
+  - platform: template
+    name: "Firmware Version"
+    id: firmware_version
+    entity_category: diagnostic
+    icon: "mdi:chip"
+    update_interval: 6h
+    lambda: |-
+      return {"v1.0.1-test-update"};
+
 binary_sensor:
   - platform: gpio
     pin:
