@@ -72,6 +72,7 @@ wifi:
 - `common/esp8266-platform.yaml` - ESP8266 framework
 - `common/esp32-ble.yaml` - BLE tracker, Bluetooth proxy, esp32_improv
 - `common/web-server.yaml` - Optional web interface (port 80)
+- `common/static-ip.yaml` - Optional static IP configuration (for mDNS issues)
 
 ### Method 3: Local Development (For Contributors)
 
@@ -145,6 +146,7 @@ All devices in this library include cutting-edge ESPHome features:
 │   ├── base.yaml              # Core ESPHome services
 │   ├── diagnostics.yaml       # Monitoring & debug
 │   ├── web-server.yaml        # Optional web UI
+│   ├── static-ip.yaml         # Optional static IP (for mDNS issues)
 │   ├── esp32-platform.yaml    # ESP32 framework
 │   ├── esp8266-platform.yaml  # ESP8266 framework
 │   └── esp32-ble.yaml         # BLE features
@@ -246,6 +248,41 @@ packages:
     url: https://github.com/heytcass/esphome-device-library
     ref: v1.0.0  # Pin to specific version
 ```
+
+## 🔧 Troubleshooting
+
+### OTA Update Fails with "Error resolving IP address"
+
+If you see errors like:
+```
+ERROR Error resolving IP address of ['device-name.local']. Is it connected to WiFi?
+ERROR Timeout resolving IP address: Timeout while resolving IP address
+```
+
+This happens when mDNS (`.local` hostname resolution) doesn't work reliably on your network. The solution is to use static IP addresses:
+
+**Step 1:** Include the static IP package in your device configuration:
+```yaml
+packages:
+  base: github://heytcass/esphome-device-library/common/base.yaml@main
+  static_ip: github://heytcass/esphome-device-library/common/static-ip.yaml@main  # Add this line
+  platform: github://heytcass/esphome-device-library/common/esp32-platform.yaml@main
+  hardware: github://heytcass/esphome-device-library/devices/sonoff/s31.yaml@main
+```
+
+**Step 2:** Add static IP configuration to your `secrets.yaml`:
+```yaml
+# Static IP Configuration (one set per device)
+wifi_static_ip: "192.168.1.100"  # Choose an unused IP on your network
+wifi_gateway: "192.168.1.1"       # Your router's IP
+wifi_subnet: "255.255.255.0"      # Usually this
+wifi_dns1: "1.1.1.1"              # Cloudflare DNS
+wifi_dns2: "8.8.8.8"              # Google DNS
+```
+
+**Step 3:** Reserve the IP in your router's DHCP settings to prevent conflicts.
+
+**Note:** If you have multiple devices, you can create device-specific secret files or use per-device substitutions. See the [secrets documentation](https://esphome.io/guides/faq.html#tips-for-using-esphome) for advanced patterns.
 
 ## 🎓 Learning Resources
 
