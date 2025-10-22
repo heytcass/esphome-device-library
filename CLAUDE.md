@@ -45,12 +45,34 @@ Two import methods are supported:
 
 **Important**: Every device MUST have an example configuration in `examples/local-development/` for CI validation.
 
+### Dashboard Import Pattern (Optional)
+
+Devices can optionally include a `*-project.yaml` file for ESPHome Dashboard one-click installation:
+
+```yaml
+dashboard_import:
+  package_import_url: github://heytcass/esphome-device-library/devices/brand/model-project.yaml@main
+  import_full_config: false
+
+packages:
+  base: github://heytcass/esphome-device-library/common/base.yaml@main
+  hardware: github://heytcass/esphome-device-library/devices/brand/model.yaml@main
+```
+
+This allows users to install directly from the ESPHome Dashboard without manually creating config files.
+
 ### Secrets Management
 
 All sensitive data uses ESPHome's `!secret` directive:
 - `secrets.yaml.example` contains template with comments
 - `secrets.yaml` (gitignored) contains actual values
 - CI workflow creates minimal secrets for validation
+
+**First-time setup**:
+```bash
+cp secrets.yaml.example secrets.yaml
+# Edit secrets.yaml with your actual WiFi credentials and keys
+```
 
 ## Essential Commands
 
@@ -90,6 +112,7 @@ pip install esphome
    - Define board type (esp32/esp8266/esp32c3)
    - Define GPIO pins and device-specific sensors
    - Use substitutions for calibration values
+   - Include `improv_serial` component for USB WiFi provisioning
    - DO NOT include base services (WiFi, API, OTA) - those are in common/base.yaml
 
 2. **Create example config**: `examples/local-development/device-test.yaml`
