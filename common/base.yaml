@@ -19,9 +19,6 @@ safe_mode:
 
 captive_portal:
 
-# Modern WiFi provisioning via USB serial (ESPHome 2024+)
-improv_serial:
-
 mdns:
   disabled: false
 
