@@ -6,6 +6,9 @@ esp32:
   board: esp32-c3-devkitm-1
   variant: ESP32C3
 
+# Modern WiFi provisioning via USB serial (ESPHome 2024+)
+improv_serial:
+
 # UART for CSE7766 power monitoring chip
 uart:
   rx_pin: GPIO20

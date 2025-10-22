@@ -4,6 +4,9 @@
 esp8266:
   board: esp01_1m
 
+# Modern WiFi provisioning via USB serial (ESPHome 2024+)
+improv_serial:
+
 # UART for CSE7766 power monitoring chip
 uart:
   rx_pin: RX
