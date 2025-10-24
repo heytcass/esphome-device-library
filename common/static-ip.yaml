@@ -7,20 +7,25 @@
 # - OTA updates fail with "Error resolving IP address" errors
 #
 # Usage:
-# 1. Add the required secrets to your secrets.yaml file (see secrets.yaml.example)
-# 2. Include this package in your device configuration:
+# 1. Add network-wide secrets to your secrets.yaml file (gateway, subnet)
+# 2. Define device-specific IP in your device config substitutions:
+#
+#    substitutions:
+#      wifi_static_ip: "192.168.1.100"
+#
+# 3. Include this package in your device configuration:
 #
 #    packages:
 #      static_ip: github://heytcass/esphome-device-library/common/static-ip.yaml@main
 #
-# Note: This configures the device to request a specific IP from your router.
+# Note: DNS servers are not configured here - the device will use default DNS resolution.
+# If you need custom DNS servers, add dns1/dns2 fields to your device config.
+#
 # Make sure to also reserve this IP in your router's DHCP settings to avoid conflicts.
 
 wifi:
   # Static IP configuration
   manual_ip:
-    static_ip: !secret wifi_static_ip
+    static_ip: ${wifi_static_ip}
     gateway: !secret wifi_gateway
     subnet: !secret wifi_subnet
-    dns1: !secret wifi_dns1
-    dns2: !secret wifi_dns2
