@@ -55,8 +55,5 @@ switch:
 debug:
   update_interval: 30s
 
-# Firmware update component (ESPHome 2024+)
-update:
-  - platform: esphome
-    name: "Firmware Update"
-    entity_category: diagnostic
+# Note: Update entities are automatically created by Home Assistant ESPHome integration
+# when using the ESPHome add-on. No explicit YAML configuration is needed.
