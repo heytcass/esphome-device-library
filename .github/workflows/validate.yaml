@@ -16,6 +16,7 @@ jobs:
           - examples/local-development/wyzeoutdoor2.yaml
           - examples/local-development/wyzeoutdoor3.yaml
           - examples/local-development/sonoff-s31-kitchen.yaml
+          - examples/local-development/sonoff-s31-garage-static-ip.yaml
           - examples/local-development/athom-pg01v3-eu-living-room.yaml
           - examples/local-development/airgradient-one-office.yaml
 
@@ -39,6 +40,8 @@ jobs:
           api_encryption_key: "rBPmvFdSW1At4ksEt3ut050Vcx6mVIeXBc46XNKF3Q8="
           ota_password: "test-ota-password"
           ap_password: "test-ap-password"
+          wifi_gateway: "192.168.1.1"
+          wifi_subnet: "255.255.255.0"
           EOF
 
       - name: Validate ${{ matrix.config }}

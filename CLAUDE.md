@@ -133,7 +133,7 @@ pip install esphome
 Optional features are separate includes to keep base configs minimal:
 
 - `common/web-server.yaml` - Adds web UI on port 80
-- `common/static-ip.yaml` - For networks with mDNS issues (requires secrets: wifi_static_ip, wifi_gateway, wifi_subnet, wifi_dns1, wifi_dns2)
+- `common/static-ip.yaml` - For networks with mDNS issues (requires substitution: wifi_static_ip; requires secrets: wifi_gateway, wifi_subnet)
 - `common/esp32-ble.yaml` - BLE proxy and tracker (ESP32 only)
 
 Include these AFTER base.yaml to override/extend functionality.
@@ -168,7 +168,7 @@ GitHub Actions validates all example configs on push/PR:
 2. **GPIO conflicts**: Check device pinouts carefully - some pins are reserved for flash/boot
 3. **Secrets in CI**: CI uses dummy values - validation doesn't need real WiFi credentials
 4. **Package order matters**: base.yaml should be first, hardware last, optionals can override
-5. **Static IP usage**: Requires both the package AND secrets - document when needed for specific network setups
+5. **Static IP usage**: Each device needs its own IP in substitutions (wifi_static_ip), while network config (gateway, subnet) goes in secrets
 
 ## Modern ESPHome Features (2025)
 

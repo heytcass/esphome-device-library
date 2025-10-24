@@ -1,0 +1,26 @@
+# Example configuration showing static IP usage
+# This demonstrates how each device gets its own unique static IP via substitutions
+# while sharing network-wide settings (gateway, DNS) via secrets
+
+substitutions:
+  device_name: sonoff-s31-garage
+  friendly_name: "Garage Heater"
+  # Device-specific static IP address (unique to this device)
+  wifi_static_ip: "192.168.1.100"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: false
+
+packages:
+  base: !include ../../common/base.yaml
+  platform: !include ../../common/esp8266-platform.yaml
+  diagnostics: !include ../../common/diagnostics.yaml
+  hardware: !include ../../devices/sonoff/s31.yaml
+  # Static IP package - uses wifi_static_ip substitution defined above
+  static_ip: !include ../../common/static-ip.yaml
+
+wifi:
+  ap:
+    ssid: "${friendly_name} Fallback"
