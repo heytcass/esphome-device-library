@@ -19,6 +19,16 @@ jobs:
           - examples/local-development/sonoff-s31-garage-static-ip.yaml
           - examples/local-development/athom-pg01v3-eu-living-room.yaml
           - examples/local-development/airgradient-one-office.yaml
+          - examples/local-development/sonoff-basic-r2-bedroom.yaml
+          - examples/local-development/shelly-1-hallway.yaml
+          - examples/local-development/shelly-plus-1-bathroom.yaml
+          - examples/local-development/shelly-2.5-office-blinds.yaml
+          - examples/local-development/sonoff-4ch-pro-r2-irrigation.yaml
+          - examples/local-development/esp32-cam-front-door.yaml
+          - examples/local-development/sonoff-pow-elite-washer.yaml
+          - examples/local-development/athom-pg01v2-us-office.yaml
+          - examples/local-development/sonoff-mini-r4-closet.yaml
+          - examples/local-development/shelly-plus-1pm-heater.yaml
 
     steps:
       - name: Checkout repository

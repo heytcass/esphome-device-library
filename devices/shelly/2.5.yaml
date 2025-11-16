@@ -1,0 +1,184 @@
+# Shelly 2.5 hardware definition
+# ESP8266-based dual relay with power monitoring (ADE7953)
+# Popular for roller shutters and blinds
+
+esp8266:
+  board: esp01_1m
+
+# Modern WiFi provisioning via USB serial (ESPHome 2024+)
+improv_serial:
+
+# I2C for ADE7953 power monitoring chip
+i2c:
+  sda: GPIO12
+  scl: GPIO14
+
+sensor:
+  # ADE7953 power monitoring (dual channel)
+  - platform: ade7953_i2c
+    irq_pin: GPIO16  # Critical for temperature management
+    voltage:
+      name: "Voltage"
+      accuracy_decimals: 1
+      device_class: voltage
+      state_class: measurement
+
+    # Channel A (external relay 1, internal relay 2)
+    current_a:
+      name: "Current Channel 1"
+      accuracy_decimals: 2
+      device_class: current
+      state_class: measurement
+      filters:
+        - lambda: |-
+            if (x < 0.060) return 0.0;
+            return x;
+
+    active_power_a:
+      name: "Power Channel 1"
+      id: power_channel_1
+      accuracy_decimals: 1
+      device_class: power
+      state_class: measurement
+      filters:
+        - lambda: |-
+            if (x < 1.0) return 0.0;
+            return x;
+
+    # Channel B (external relay 2, internal relay 1)
+    current_b:
+      name: "Current Channel 2"
+      accuracy_decimals: 2
+      device_class: current
+      state_class: measurement
+      filters:
+        - lambda: |-
+            if (x < 0.060) return 0.0;
+            return x;
+
+    active_power_b:
+      name: "Power Channel 2"
+      id: power_channel_2
+      accuracy_decimals: 1
+      device_class: power
+      state_class: measurement
+      filters:
+        - lambda: |-
+            if (x < 1.0) return 0.0;
+            return x;
+
+    update_interval: 10s
+
+  # Total daily energy tracking
+  - platform: total_daily_energy
+    name: "Daily Energy Channel 1"
+    power_id: power_channel_1
+    unit_of_measurement: kWh
+    accuracy_decimals: 3
+    device_class: energy
+    state_class: total_increasing
+    filters:
+      - multiply: 0.001
+
+  - platform: total_daily_energy
+    name: "Daily Energy Channel 2"
+    power_id: power_channel_2
+    unit_of_measurement: kWh
+    accuracy_decimals: 3
+    device_class: energy
+    state_class: total_increasing
+    filters:
+      - multiply: 0.001
+
+  # NTC temperature sensor (monitors chip temperature)
+  - platform: ntc
+    sensor: temp_resistance
+    name: "Temperature"
+    accuracy_decimals: 1
+    device_class: temperature
+    state_class: measurement
+    calibration:
+      b_constant: 3350
+      reference_resistance: 10kOhm
+      reference_temperature: 298.15K
+
+  - platform: resistance
+    id: temp_resistance
+    sensor: temp_analog
+    configuration: DOWNSTREAM
+    resistor: 32kOhm
+
+  - platform: adc
+    id: temp_analog
+    pin: A0
+    update_interval: 30s
+
+binary_sensor:
+  # Button (mode switch)
+  - platform: gpio
+    pin:
+      number: GPIO2
+      mode: INPUT_PULLUP
+    name: "Button"
+    id: button
+    entity_category: diagnostic
+    internal: true
+    filters:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+    on_press:
+      - logger.log: "Mode button pressed"
+
+  # Switch input 1
+  - platform: gpio
+    pin:
+      number: GPIO13
+      mode: INPUT_PULLUP
+    name: "Switch Input 1"
+    id: switch_input_1
+    entity_category: diagnostic
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_press:
+      - switch.toggle: relay_1
+
+  # Switch input 2
+  - platform: gpio
+    pin:
+      number: GPIO5
+      mode: INPUT_PULLUP
+    name: "Switch Input 2"
+    id: switch_input_2
+    entity_category: diagnostic
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_press:
+      - switch.toggle: relay_2
+
+switch:
+  - platform: gpio
+    name: "Relay 1"
+    id: relay_1
+    pin: GPIO4
+    restore_mode: RESTORE_DEFAULT_OFF
+
+  - platform: gpio
+    name: "Relay 2"
+    id: relay_2
+    pin: GPIO15
+    restore_mode: RESTORE_DEFAULT_OFF
+
+output:
+  - platform: gpio
+    pin: GPIO0
+    inverted: true
+    id: led_gpio
+
+light:
+  - platform: binary
+    name: "LED"
+    id: led
+    internal: true
+    output: led_gpio
