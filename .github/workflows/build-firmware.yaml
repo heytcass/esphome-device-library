@@ -1,0 +1,102 @@
+name: Build Firmware
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:  # Allow manual trigger for testing
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        config:
+          - examples/local-development/wyzeoutdoor1.yaml
+          - examples/local-development/wyzeoutdoor2.yaml
+          - examples/local-development/wyzeoutdoor3.yaml
+          - examples/local-development/sonoff-s31-kitchen.yaml
+          - examples/local-development/sonoff-s31-garage-static-ip.yaml
+          - examples/local-development/athom-pg01v3-eu-living-room.yaml
+          - examples/local-development/airgradient-one-office.yaml
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install ESPHome
+        run: pip install esphome
+
+      - name: Create secrets.yaml
+        run: |
+          cat > secrets.yaml << EOF
+          wifi_ssid: "test-network"
+          wifi_password: "test-password"
+          api_encryption_key: "rBPmvFdSW1At4ksEt3ut050Vcx6mVIeXBc46XNKF3Q8="
+          ota_password: "test-ota-password"
+          ap_password: "test-ap-password"
+          wifi_gateway: "192.168.1.1"
+          wifi_subnet: "255.255.255.0"
+          EOF
+
+      - name: Extract device name
+        id: device
+        run: |
+          # Extract device name from config path
+          # e.g., examples/local-development/sonoff-s31-kitchen.yaml -> sonoff-s31-kitchen
+          DEVICE_NAME=$(basename ${{ matrix.config }} .yaml)
+          echo "name=${DEVICE_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Compile firmware
+        run: esphome compile ${{ matrix.config }}
+
+      - name: Find firmware binary
+        id: firmware
+        run: |
+          # ESPHome builds to .esphome/build/<device_name>/.pioenvs/<device_name>/firmware.bin
+          DEVICE_NAME="${{ steps.device.outputs.name }}"
+          FIRMWARE_PATH=".esphome/build/${DEVICE_NAME}/.pioenvs/${DEVICE_NAME}/firmware.bin"
+
+          if [ ! -f "${FIRMWARE_PATH}" ]; then
+            echo "Error: Firmware not found at ${FIRMWARE_PATH}"
+            ls -la .esphome/build/${DEVICE_NAME}/.pioenvs/ || true
+            exit 1
+          fi
+
+          echo "path=${FIRMWARE_PATH}" >> $GITHUB_OUTPUT
+
+      - name: Generate MD5 checksum
+        run: |
+          DEVICE_NAME="${{ steps.device.outputs.name }}"
+          FIRMWARE_PATH="${{ steps.firmware.outputs.path }}"
+          md5sum "${FIRMWARE_PATH}" | cut -d' ' -f1 > "${DEVICE_NAME}.md5"
+
+      - name: Rename firmware binary
+        run: |
+          DEVICE_NAME="${{ steps.device.outputs.name }}"
+          FIRMWARE_PATH="${{ steps.firmware.outputs.path }}"
+          cp "${FIRMWARE_PATH}" "${DEVICE_NAME}.bin"
+
+      - name: Upload firmware to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ${{ steps.device.outputs.name }}.bin
+            ${{ steps.device.outputs.name }}.md5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload firmware as artifact (for workflow_dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-${{ steps.device.outputs.name }}
+          path: |
+            ${{ steps.device.outputs.name }}.bin
+            ${{ steps.device.outputs.name }}.md5
+          retention-days: 7
