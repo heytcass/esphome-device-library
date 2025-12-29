@@ -15,6 +15,7 @@
 
 # Required component for HTTP requests
 http_request:
+  verify_ssl: false  # Required for HTTPS on ESP8266; ESP32 with ESP-IDF can verify certificates
   timeout: 10min
 
 # Override OTA configuration from base.yaml
