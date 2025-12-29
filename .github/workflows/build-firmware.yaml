@@ -98,8 +98,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload firmware as artifact (for workflow_dispatch)
-        if: github.event_name == 'workflow_dispatch'
+      - name: Upload firmware as artifact
+        if: github.event_name != 'release'
         uses: actions/upload-artifact@v4
         with:
           name: firmware-${{ steps.device.outputs.name }}
