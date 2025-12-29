@@ -50,41 +50,37 @@ jobs:
           wifi_subnet: "255.255.255.0"
           EOF
 
-      - name: Extract device name
-        id: device
-        run: |
-          # Extract device name from config path
-          # e.g., examples/local-development/sonoff-s31-kitchen.yaml -> sonoff-s31-kitchen
-          DEVICE_NAME=$(basename ${{ matrix.config }} .yaml)
-          echo "name=${DEVICE_NAME}" >> $GITHUB_OUTPUT
-
       - name: Compile firmware
         run: esphome compile ${{ matrix.config }}
 
       - name: Find firmware binary
         id: firmware
         run: |
-          # ESPHome builds to .esphome/build/<device_name>/.pioenvs/<device_name>/firmware.bin
-          DEVICE_NAME="${{ steps.device.outputs.name }}"
-          FIRMWARE_PATH=".esphome/build/${DEVICE_NAME}/.pioenvs/${DEVICE_NAME}/firmware.bin"
+          # ESPHome uses the device_name from the YAML, not the filename
+          # Find the actual build directory dynamically
+          FIRMWARE_PATH=$(find .esphome/build -name "firmware.bin" -path "*/.pioenvs/*/firmware.bin" | head -1)
 
-          if [ ! -f "${FIRMWARE_PATH}" ]; then
-            echo "Error: Firmware not found at ${FIRMWARE_PATH}"
-            ls -la .esphome/build/${DEVICE_NAME}/.pioenvs/ || true
+          if [ -z "${FIRMWARE_PATH}" ] || [ ! -f "${FIRMWARE_PATH}" ]; then
+            echo "Error: Firmware not found"
+            find .esphome/build -name "*.bin" || true
             exit 1
           fi
 
+          # Extract device name from the path (.esphome/build/<device_name>/.pioenvs/...)
+          DEVICE_NAME=$(echo "${FIRMWARE_PATH}" | cut -d'/' -f3)
+
           echo "path=${FIRMWARE_PATH}" >> $GITHUB_OUTPUT
+          echo "device_name=${DEVICE_NAME}" >> $GITHUB_OUTPUT
 
       - name: Generate MD5 checksum
         run: |
-          DEVICE_NAME="${{ steps.device.outputs.name }}"
+          DEVICE_NAME="${{ steps.firmware.outputs.device_name }}"
           FIRMWARE_PATH="${{ steps.firmware.outputs.path }}"
           md5sum "${FIRMWARE_PATH}" | cut -d' ' -f1 > "${DEVICE_NAME}.md5"
 
       - name: Rename firmware binary
         run: |
-          DEVICE_NAME="${{ steps.device.outputs.name }}"
+          DEVICE_NAME="${{ steps.firmware.outputs.device_name }}"
           FIRMWARE_PATH="${{ steps.firmware.outputs.path }}"
           cp "${FIRMWARE_PATH}" "${DEVICE_NAME}.bin"
 
@@ -93,8 +89,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            ${{ steps.device.outputs.name }}.bin
-            ${{ steps.device.outputs.name }}.md5
+            ${{ steps.firmware.outputs.device_name }}.bin
+            ${{ steps.firmware.outputs.device_name }}.md5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -102,8 +98,8 @@ jobs:
         if: github.event_name != 'release'
         uses: actions/upload-artifact@v4
         with:
-          name: firmware-${{ steps.device.outputs.name }}
+          name: firmware-${{ steps.firmware.outputs.device_name }}
           path: |
-            ${{ steps.device.outputs.name }}.bin
-            ${{ steps.device.outputs.name }}.md5
+            ${{ steps.firmware.outputs.device_name }}.bin
+            ${{ steps.firmware.outputs.device_name }}.md5
           retention-days: 7
