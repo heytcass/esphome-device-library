@@ -213,7 +213,7 @@ button:
 
 output:
   - platform: gpio
-    id: watchdog
+    id: watchdog_output
     pin: GPIO2
 
 light:
@@ -289,9 +289,9 @@ interval:
   - interval: 30s
     # Watchdog - notify device is alive
     then:
-      - output.turn_on: watchdog
+      - output.turn_on: watchdog_output
       - delay: 20ms
-      - output.turn_off: watchdog
+      - output.turn_off: watchdog_output
 
   - interval: 5s
     # Auto-rotate display pages
