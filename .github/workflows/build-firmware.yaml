@@ -55,18 +55,18 @@ jobs:
       - name: Find firmware binary
         id: firmware
         run: |
-          # ESPHome builds to .pioenvs/<device_name>/firmware.bin
+          # ESPHome builds to <config_dir>/.esphome/build/<device_name>/.pioenvs/<device_name>/firmware.bin
           # Find the firmware binary dynamically
-          FIRMWARE_PATH=$(find .pioenvs -name "firmware.bin" 2>/dev/null | head -1)
+          FIRMWARE_PATH=$(find . -path "*/.pioenvs/*/firmware.bin" 2>/dev/null | head -1)
 
           if [ -z "${FIRMWARE_PATH}" ] || [ ! -f "${FIRMWARE_PATH}" ]; then
-            echo "Error: Firmware not found in .pioenvs/"
+            echo "Error: Firmware not found"
             find . -name "firmware.bin" 2>/dev/null || true
             exit 1
           fi
 
-          # Extract device name from the path (.pioenvs/<device_name>/firmware.bin)
-          DEVICE_NAME=$(echo "${FIRMWARE_PATH}" | cut -d'/' -f2)
+          # Extract device name from the path (the directory name inside .pioenvs/)
+          DEVICE_NAME=$(basename $(dirname "${FIRMWARE_PATH}"))
 
           echo "path=${FIRMWARE_PATH}" >> $GITHUB_OUTPUT
           echo "device_name=${DEVICE_NAME}" >> $GITHUB_OUTPUT
