@@ -8,8 +8,9 @@ on:
     branches:
       - claude/automate-esphome-builds-8GU7P  # Test on this branch
     paths:
-      - 'examples/local-development/*.yaml'
+      - 'firmware/*.yaml'
       - 'common/*.yaml'
+      - 'devices/**/*.yaml'
       - '.github/workflows/build-firmware.yaml'
 
 jobs:
@@ -18,13 +19,11 @@ jobs:
     strategy:
       matrix:
         config:
-          - examples/local-development/wyzeoutdoor1.yaml
-          - examples/local-development/wyzeoutdoor2.yaml
-          - examples/local-development/wyzeoutdoor3.yaml
-          - examples/local-development/sonoff-s31-kitchen.yaml
-          - examples/local-development/sonoff-s31-garage-static-ip.yaml
-          - examples/local-development/athom-pg01v3-eu-living-room.yaml
-          - examples/local-development/airgradient-one-office.yaml
+          # One firmware per device type
+          - firmware/wyze-outdoor-plug.yaml
+          - firmware/sonoff-s31.yaml
+          - firmware/athom-pg01v3-eu.yaml
+          - firmware/airgradient-one-v9.yaml
 
     steps:
       - name: Checkout repository

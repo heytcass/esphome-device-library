@@ -1,0 +1,22 @@
+# Firmware build config for Sonoff S31
+# Users flash this, then adopt via ESPHome dashboard with their own name
+
+substitutions:
+  device_name: sonoff-s31
+  friendly_name: "Sonoff S31"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: true  # Ensures unique names when multiple devices use same firmware
+
+packages:
+  base: !include ../common/base.yaml
+  http_ota: !include ../common/http-ota.yaml
+  platform: !include ../common/esp8266-platform.yaml
+  diagnostics: !include ../common/diagnostics.yaml
+  hardware: !include ../devices/sonoff/s31.yaml
+
+wifi:
+  ap:
+    ssid: "${friendly_name} Fallback"
