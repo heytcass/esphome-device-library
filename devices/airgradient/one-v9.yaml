@@ -13,6 +13,9 @@ logger:
     component: ERROR  # Reduce component warnings
 
 substitutions:
+  # Firmware binary name for HTTP OTA updates
+  firmware_name: "airgradient-one-v9"
+  # LED configuration
   led_strip_brightness: "25%"
 
 # UART for SenseAir S8 CO2 sensor

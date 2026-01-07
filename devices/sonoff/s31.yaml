@@ -7,6 +7,10 @@ esp8266:
 # Modern WiFi provisioning via USB serial (ESPHome 2024+)
 improv_serial:
 
+substitutions:
+  # Firmware binary name for HTTP OTA updates
+  firmware_name: "sonoff-s31"
+
 # UART for CSE7766 power monitoring chip
 uart:
   rx_pin: RX

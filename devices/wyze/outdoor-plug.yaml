@@ -8,6 +8,9 @@ esp32:
 improv_serial:
 
 substitutions:
+  # Firmware binary name for HTTP OTA updates
+  firmware_name: "wyze-outdoor-plug"
+  # Hardware calibration
   current_res: "0.001"
   voltage_div: "770"
 
