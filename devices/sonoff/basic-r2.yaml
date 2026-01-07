@@ -1,0 +1,57 @@
+# Sonoff Basic R2 hardware definition
+# ESP8266-based simple smart switch (no power monitoring)
+
+esp8266:
+  board: esp01_1m
+
+# Modern WiFi provisioning via USB serial (ESPHome 2024+)
+improv_serial:
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "Button"
+    id: button
+    entity_category: diagnostic
+    internal: true
+    filters:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+    on_press:
+      - switch.toggle: relay
+    on_click:
+      - min_length: 50ms
+        max_length: 500ms
+        then:
+          - switch.toggle: relay
+      - min_length: 2s
+        max_length: 5s
+        then:
+          - logger.log: "Button long press detected"
+
+switch:
+  - platform: gpio
+    name: "Switch"
+    id: relay
+    pin: GPIO12
+    restore_mode: RESTORE_DEFAULT_OFF
+    on_turn_on:
+      - light.turn_on: led
+    on_turn_off:
+      - light.turn_off: led
+
+output:
+  - platform: gpio
+    pin: GPIO13
+    inverted: true
+    id: led_gpio
+
+light:
+  - platform: binary
+    name: "LED"
+    id: led
+    internal: true
+    output: led_gpio

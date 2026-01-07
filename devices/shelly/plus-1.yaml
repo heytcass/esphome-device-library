@@ -1,0 +1,46 @@
+# Shelly Plus 1 hardware definition
+# ESP32-based in-wall smart switch (successor to Shelly 1)
+
+esp32:
+  board: esp32doit-devkit-v1
+  framework:
+    type: esp-idf
+
+# Modern WiFi provisioning via USB serial (ESPHome 2024+)
+improv_serial:
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO4
+      mode: INPUT_PULLUP
+    name: "Switch Input"
+    id: switch_input
+    entity_category: diagnostic
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_press:
+      - switch.toggle: relay
+
+  - platform: gpio
+    pin:
+      number: GPIO25
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "Button"
+    id: button
+    entity_category: diagnostic
+    internal: true
+    filters:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+    on_press:
+      - switch.toggle: relay
+
+switch:
+  - platform: gpio
+    name: "Relay"
+    id: relay
+    pin: GPIO26
+    restore_mode: RESTORE_DEFAULT_OFF

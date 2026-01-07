@@ -1,0 +1,148 @@
+# Shelly Plus 1PM hardware definition
+# ESP32-based in-wall smart switch with power monitoring
+
+esp32:
+  board: esp32doit-devkit-v1
+  framework:
+    type: esp-idf
+
+# Modern WiFi provisioning via USB serial (ESPHome 2024+)
+improv_serial:
+
+# I2C for BL0942 power monitoring chip
+uart:
+  rx_pin: GPIO35
+  tx_pin: GPIO25
+  baud_rate: 4800
+
+sensor:
+  # BL0942 power monitoring
+  - platform: bl0942
+    uart_id: uart_bus
+    voltage:
+      name: "Voltage"
+      accuracy_decimals: 1
+      device_class: voltage
+      state_class: measurement
+
+    current:
+      name: "Current"
+      id: current
+      accuracy_decimals: 2
+      device_class: current
+      state_class: measurement
+      filters:
+        - lambda: |-
+            if (x < 0.060) return 0.0;
+            return x;
+
+    power:
+      name: "Power"
+      id: power
+      accuracy_decimals: 1
+      device_class: power
+      state_class: measurement
+      filters:
+        - lambda: |-
+            if (x < 1.0) return 0.0;
+            return x;
+
+    energy:
+      name: "Energy"
+      id: energy
+      accuracy_decimals: 2
+      device_class: energy
+      state_class: total_increasing
+      filters:
+        - multiply: 0.001
+
+    frequency:
+      name: "Frequency"
+      accuracy_decimals: 1
+      device_class: frequency
+      state_class: measurement
+
+    update_interval: 10s
+
+  - platform: total_daily_energy
+    name: "Daily Energy"
+    power_id: power
+    unit_of_measurement: kWh
+    accuracy_decimals: 3
+    device_class: energy
+    state_class: total_increasing
+    filters:
+      - multiply: 0.001
+
+  # NTC temperature sensor
+  - platform: ntc
+    sensor: temp_resistance
+    name: "Temperature"
+    accuracy_decimals: 1
+    device_class: temperature
+    state_class: measurement
+    calibration:
+      b_constant: 3350
+      reference_resistance: 10kOhm
+      reference_temperature: 298.15K
+
+  - platform: resistance
+    id: temp_resistance
+    sensor: temp_analog
+    configuration: DOWNSTREAM
+    resistor: 10kOhm
+
+  - platform: adc
+    id: temp_analog
+    pin: GPIO32
+    attenuation: 11db
+    update_interval: 30s
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO4
+      mode: INPUT_PULLUP
+    name: "Switch Input"
+    id: switch_input
+    entity_category: diagnostic
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_press:
+      - switch.toggle: relay
+
+  - platform: gpio
+    pin:
+      number: GPIO25
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "Button"
+    id: button
+    entity_category: diagnostic
+    internal: true
+    filters:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+    on_press:
+      - switch.toggle: relay
+
+switch:
+  - platform: gpio
+    name: "Relay"
+    id: relay
+    pin: GPIO26
+    restore_mode: RESTORE_DEFAULT_OFF
+
+output:
+  - platform: gpio
+    pin: GPIO0
+    inverted: true
+    id: led_gpio
+
+light:
+  - platform: binary
+    name: "LED"
+    id: led
+    internal: true
+    output: led_gpio

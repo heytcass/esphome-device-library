@@ -549,6 +549,699 @@ _TODO: Add device photos, GPIO pinout diagram, opened case_
 
 ---
 
+## Sonoff Basic R2
+
+### Overview
+Ultra-affordable ESP8266-based smart switch with physical button. One of the most popular beginner-friendly ESPHome devices.
+
+### Hardware Specifications
+
+**Chip:** ESP8266 (80MHz)
+**Flash:** 1MB
+**Buttons:** 1
+**Relays:** 1
+**LEDs:** 1 (blue status LED)
+**Max Load:** 10A
+
+### GPIO Pinout
+
+| Component | GPIO | Notes |
+|-----------|------|-------|
+| Relay | GPIO12 | Controls output |
+| Button | GPIO0 | INPUT_PULLUP, inverted |
+| LED | GPIO13 | Inverted (active low) |
+
+### Features
+
+- ✅ **Simple Switch Control** - Single relay for basic switching
+- ✅ **Physical Button** - Manual control with long-press detection
+- ✅ **Status LED** - Visual feedback for device state
+- ✅ **Compact Size** - Fits in standard electrical boxes
+- ✅ **Very Affordable** - Budget-friendly option ($5-10)
+- ⚠️ **No Power Monitoring** - Use S31 or POW Elite for power monitoring
+
+### Usage Example
+
+```yaml
+substitutions:
+  device_name: bedroom-light
+  friendly_name: "Bedroom Light"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+
+packages:
+  sonoff:
+    url: https://github.com/heytcass/esphome-device-library
+    ref: main
+    files:
+      - common/base.yaml
+      - common/esp8266-platform.yaml
+      - common/diagnostics.yaml
+      - devices/sonoff/basic-r2.yaml
+    refresh: 1d
+
+wifi:
+  ap:
+    ssid: "${friendly_name} Fallback"
+```
+
+### Community Notes
+
+- **Tested ESPHome Versions:** 2024.11.0+
+- **Reliability:** Very stable, extremely popular in the community
+- **Use Cases:** Lights, fans, simple on/off devices
+
+---
+
+## Shelly 1
+
+### Overview
+Compact ESP8266-based in-wall smart switch designed to fit behind existing wall switches. Very popular in EU markets.
+
+### Hardware Specifications
+
+**Chip:** ESP8266 (80MHz)
+**Flash:** 1MB
+**Relays:** 1 (16A rating)
+**Switch Input:** 1
+**Size:** 41x36x17mm
+
+### GPIO Pinout
+
+| Component | GPIO | Notes |
+|-----------|------|-------|
+| Relay | GPIO4 | 16A relay output |
+| Switch Input | GPIO5 | Physical wall switch connection |
+
+### Features
+
+- ✅ **In-Wall Installation** - Extremely compact form factor
+- ✅ **Physical Switch Support** - Connects to existing wall switches
+- ✅ **16A Rating** - Higher current than most competitors
+- ✅ **CE Certified** - Meets EU safety standards
+- ⚠️ **No Power Monitoring** - Use Plus 1PM for power monitoring
+
+### Usage Example
+
+```yaml
+substitutions:
+  device_name: hallway-light
+  friendly_name: "Hallway Light"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+
+packages:
+  shelly:
+    url: https://github.com/heytcass/esphome-device-library
+    ref: main
+    files:
+      - common/base.yaml
+      - common/esp8266-platform.yaml
+      - common/diagnostics.yaml
+      - devices/shelly/1.yaml
+    refresh: 1d
+
+wifi:
+  ap:
+    ssid: "${friendly_name} Fallback"
+```
+
+### Community Notes
+
+- **Tested ESPHome Versions:** 2024.11.0+
+- **Installation:** Requires electrical knowledge for in-wall installation
+- **Successor:** Shelly Plus 1 (ESP32-based with more features)
+
+---
+
+## Shelly Plus 1
+
+### Overview
+Modern ESP32-based in-wall smart switch with Bluetooth support. Successor to the popular Shelly 1.
+
+### Hardware Specifications
+
+**Chip:** ESP32 (Dual-core 240MHz)
+**Flash:** 4MB
+**Relays:** 1 (16A rating)
+**Switch Input:** 1
+**Button:** 1
+**Connectivity:** WiFi + Bluetooth
+
+### GPIO Pinout
+
+| Component | GPIO | Notes |
+|-----------|------|-------|
+| Relay | GPIO26 | 16A relay output |
+| Switch Input | GPIO4 | Physical wall switch connection |
+| Button | GPIO25 | Manual control button |
+
+### Features
+
+- ✅ **ESP32 Power** - Dual-core processor for advanced features
+- ✅ **Bluetooth Support** - BLE proxy and provisioning
+- ✅ **Physical Switch Support** - Connects to existing wall switches
+- ✅ **16A Rating** - High current capacity
+- ⚠️ **No Power Monitoring** - Use Plus 1PM for power monitoring
+
+### Usage Example
+
+```yaml
+substitutions:
+  device_name: bathroom-fan
+  friendly_name: "Bathroom Fan"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+
+packages:
+  shelly:
+    url: https://github.com/heytcass/esphome-device-library
+    ref: main
+    files:
+      - common/base.yaml
+      - common/esp32-platform.yaml
+      - common/esp32-ble.yaml
+      - common/diagnostics.yaml
+      - devices/shelly/plus-1.yaml
+    refresh: 1d
+
+wifi:
+  ap:
+    ssid: "${friendly_name} Fallback"
+```
+
+### Community Notes
+
+- **Tested ESPHome Versions:** 2024.11.0+
+- **Variants:** Plus 1 Mini (ESP32-C3, even more compact)
+- **Installation:** Requires electrical knowledge for in-wall installation
+
+---
+
+## Shelly 2.5
+
+### Overview
+Dual-relay ESP8266 switch with power monitoring, extremely popular for roller shutters and blinds control.
+
+### Hardware Specifications
+
+**Chip:** ESP8266 (80MHz)
+**Flash:** 1MB
+**Power Monitoring:** ADE7953 (I2C, dual-channel)
+**Relays:** 2 (independent or linked)
+**Switch Inputs:** 2
+**Temperature Sensor:** NTC thermistor
+
+### GPIO Pinout
+
+| Component | GPIO | Notes |
+|-----------|------|-------|
+| Relay 1 | GPIO4 | First relay output |
+| Relay 2 | GPIO15 | Second relay output |
+| Switch Input 1 | GPIO13 | First physical switch |
+| Switch Input 2 | GPIO5 | Second physical switch |
+| Button | GPIO2 | Mode button |
+| LED | GPIO0 | Status indicator |
+| I2C SDA | GPIO12 | ADE7953 power monitor |
+| I2C SCL | GPIO14 | ADE7953 power monitor |
+| ADE7953 IRQ | GPIO16 | CRITICAL for temp management |
+| NTC Sensor | A0 | Temperature monitoring |
+
+### Features
+
+- ✅ **Dual Channel Power Monitoring** - Independent monitoring per channel
+- ✅ **Roller Shutter Mode** - Perfect for blinds and covers
+- ✅ **Temperature Monitoring** - Prevents overheating
+- ✅ **Energy Tracking** - Compatible with Home Assistant Energy Dashboard
+- ⚠️ **Runs Hot** - Normal operating temperature ~55°C, IRQ pin critical
+
+### Usage Example
+
+```yaml
+substitutions:
+  device_name: office-blinds
+  friendly_name: "Office Blinds"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+
+packages:
+  shelly:
+    url: https://github.com/heytcass/esphome-device-library
+    ref: main
+    files:
+      - common/base.yaml
+      - common/esp8266-platform.yaml
+      - common/diagnostics.yaml
+      - devices/shelly/2.5.yaml
+    refresh: 1d
+
+wifi:
+  ap:
+    ssid: "${friendly_name} Fallback"
+```
+
+### Known Issues
+
+- ⚠️ **IRQ Pin Required** - GPIO16 IRQ pin is critical for preventing overheating
+- ⚠️ **Temperature** - Runs warm (50-60°C) by design, monitor temp sensor
+
+### Community Notes
+
+- **Tested ESPHome Versions:** 2024.11.0+
+- **Most Popular Use:** Roller shutters, blinds, garage doors
+- **Successor:** Shelly Plus 2PM (ESP32-based)
+
+---
+
+## Sonoff 4CH Pro R2
+
+### Overview
+Four-channel ESP8266 relay module for multi-zone control (irrigation, lighting zones, HVAC).
+
+### Hardware Specifications
+
+**Chip:** ESP8266 (80MHz)
+**Flash:** 1MB
+**Relays:** 4 (independent, 10A each)
+**Buttons:** 4 (one per channel)
+**LEDs:** 4 (one per relay)
+
+### GPIO Pinout
+
+| Component | GPIO | Notes |
+|-----------|------|-------|
+| Relay 1 | GPIO12 | First channel |
+| Relay 2 | GPIO5 | Second channel |
+| Relay 3 | GPIO4 | Third channel |
+| Relay 4 | GPIO15 | Fourth channel |
+| Button 1 | GPIO0 | First button |
+| Button 2 | GPIO9 | Second button |
+| Button 3 | GPIO10 | Third button |
+| Button 4 | GPIO14 | Fourth button |
+
+### Features
+
+- ✅ **4 Independent Relays** - Control 4 separate zones
+- ✅ **Physical Buttons** - Manual control for each channel
+- ✅ **Status LEDs** - Visual feedback per channel
+- ✅ **10A Per Channel** - Suitable for most appliances
+- ⚠️ **Requires Disassembly** - Must open case for flashing
+
+### Usage Example
+
+```yaml
+substitutions:
+  device_name: garden-irrigation
+  friendly_name: "Garden Irrigation"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+
+packages:
+  sonoff:
+    url: https://github.com/heytcass/esphome-device-library
+    ref: main
+    files:
+      - common/base.yaml
+      - common/esp8266-platform.yaml
+      - common/diagnostics.yaml
+      - devices/sonoff/4ch-pro-r2.yaml
+    refresh: 1d
+
+wifi:
+  ap:
+    ssid: "${friendly_name} Fallback"
+```
+
+### Common Use Cases
+
+- **Irrigation Systems** - 4 independent zones
+- **Lighting Control** - Multi-room control
+- **HVAC Zones** - Multiple heating/cooling zones
+
+### Community Notes
+
+- **Tested ESPHome Versions:** 2024.11.0+
+- **Variants:** 4CH (non-Pro) exists with fewer features
+
+---
+
+## AI-Thinker ESP32-CAM
+
+### Overview
+Ultra-affordable ESP32 camera module with OV2640 2MP camera. One of the most popular DIY camera options.
+
+### Hardware Specifications
+
+**Chip:** ESP32 (Dual-core 240MHz)
+**Flash:** 4MB
+**Camera:** OV2640 (2MP, 1600x1200 max)
+**MicroSD:** Card slot for storage
+**Flash LED:** White LED on GPIO4
+**Status LED:** Red LED on GPIO33
+**Price:** $5-10
+
+### GPIO Pinout
+
+| Component | GPIO | Notes |
+|-----------|------|-------|
+| Camera XCLK | GPIO0 | 20MHz external clock |
+| I2C SDA | GPIO26 | Camera control |
+| I2C SCL | GPIO27 | Camera control |
+| Flash LED | GPIO4 | White LED (PWM) |
+| Status LED | GPIO33 | Red status LED |
+
+**Available GPIOs:** 1, 3, 12, 13, 14, 15
+**WARNING:** DO NOT USE GPIO16 - connected to PSRAM!
+
+### Features
+
+- ✅ **2MP Camera** - OV2640 sensor, 1600x1200 resolution
+- ✅ **Video Streaming** - Real-time MJPEG stream
+- ✅ **Flash LED** - Controllable white LED
+- ✅ **MicroSD Slot** - Local storage option
+- ✅ **Extremely Affordable** - $5-10 per unit
+- ⚠️ **Limited GPIOs** - Most pins used by camera
+
+### Usage Example
+
+```yaml
+substitutions:
+  device_name: front-door-camera
+  friendly_name: "Front Door Camera"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+
+packages:
+  esp32cam:
+    url: https://github.com/heytcass/esphome-device-library
+    ref: main
+    files:
+      - common/base.yaml
+      - common/esp32-platform.yaml
+      - common/diagnostics.yaml
+      - devices/ai-thinker/esp32-cam.yaml
+    refresh: 1d
+
+wifi:
+  ap:
+    ssid: "${friendly_name} Fallback"
+```
+
+### Known Issues
+
+- ⚠️ **GPIO16 PSRAM** - Using GPIO16 will trigger watchdog resets
+- ⚠️ **Power Requirements** - Needs stable 5V supply
+- ⚠️ **No Enclosure** - Sold as bare board, requires housing
+
+### Community Notes
+
+- **Tested ESPHome Versions:** 2024.6.0+
+- **Use Cases:** Doorbells, security cameras, wildlife monitoring
+
+---
+
+## Sonoff POW Elite (POWR316D)
+
+### Overview
+ESP32-based power monitoring switch with built-in LCD display. High-end successor to POW R2.
+
+### Hardware Specifications
+
+**Chip:** ESP32 (Dual-core 240MHz)
+**Flash:** 4MB
+**Power Monitoring:** CSE7766 (UART)
+**Display:** TM1621 LCD (6-digit)
+**Max Load:** 16A (POWR316D) or 20A (POWR320D)
+**Button:** 1
+
+### GPIO Pinout
+
+| Component | GPIO | Notes |
+|-----------|------|-------|
+| Relay | GPIO27 | Power control |
+| Button | GPIO0 | Manual control |
+| CSE7766 RX | GPIO16 | UART power monitoring |
+
+### Features
+
+- ✅ **Advanced Power Monitoring** - Voltage, current, power, energy, power factor
+- ✅ **Built-in LCD Display** - Shows real-time power metrics
+- ✅ **Energy Tracking** - Compatible with Home Assistant Energy Dashboard
+- ✅ **ESP32 Power** - Bluetooth and advanced features
+- ✅ **16A/20A Options** - Two models available
+- ⚠️ **LCD Not Supported** - TM1621 display needs custom component
+
+### Usage Example
+
+```yaml
+substitutions:
+  device_name: washing-machine
+  friendly_name: "Washing Machine"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+
+packages:
+  sonoff:
+    url: https://github.com/heytcass/esphome-device-library
+    ref: main
+    files:
+      - common/base.yaml
+      - common/esp32-platform.yaml
+      - common/diagnostics.yaml
+      - devices/sonoff/pow-elite.yaml
+    refresh: 1d
+
+wifi:
+  ap:
+    ssid: "${friendly_name} Fallback"
+```
+
+### Community Notes
+
+- **Tested ESPHome Versions:** 2024.11.0+
+- **Use Cases:** Appliance monitoring, energy tracking
+- **Alternative:** S31 for simpler/cheaper option
+
+---
+
+## Athom Smart Plug V2 (US 16A)
+
+### Overview
+ESP8285-based US smart plug with power monitoring. Available pre-flashed with ESPHome.
+
+### Hardware Specifications
+
+**Chip:** ESP8285 (2MB flash)
+**Flash:** 2MB
+**Power Monitoring:** CSE7766 (UART)
+**Buttons:** 1
+**Relays:** 1
+**LEDs:** 1 (blue status LED)
+**Max Load:** 16A / 1920W (US 120V)
+
+### GPIO Pinout
+
+| Component | GPIO | Notes |
+|-----------|------|-------|
+| Relay | GPIO12 | Controls outlet |
+| Button | GPIO5 | INPUT_PULLUP, inverted |
+| LED | GPIO13 | Inverted (active low) |
+| CSE7766 RX | GPIO3 (RX) | UART power monitoring |
+
+### Features
+
+- ✅ **Power Monitoring** - Voltage, current, watts, energy, power factor
+- ✅ **Energy Tracking** - Compatible with Home Assistant Energy Dashboard
+- ✅ **Pre-flashed Option** - Available with ESPHome from manufacturer
+- ✅ **2MB Flash** - More space than typical 1MB devices
+- ✅ **"Made for ESPHome"** - Certified by ESPHome project
+
+### Usage Example
+
+```yaml
+substitutions:
+  device_name: desk-lamp
+  friendly_name: "Office Desk Lamp"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+
+packages:
+  athom:
+    url: https://github.com/heytcass/esphome-device-library
+    ref: main
+    files:
+      - common/base.yaml
+      - common/esp8266-platform.yaml
+      - common/diagnostics.yaml
+      - devices/athom/pg01v2-us.yaml
+    refresh: 1d
+
+wifi:
+  ap:
+    ssid: "${friendly_name} Fallback"
+```
+
+### Community Notes
+
+- **Tested ESPHome Versions:** 2024.11.0+
+- **Purchase:** Available pre-flashed from [Athom](https://www.athom.tech/)
+- **Variants:** US (16A), EU (16A), AU (10A) versions available
+
+---
+
+## Sonoff Mini R4
+
+### Overview
+Ultra-compact ESP32-based in-wall smart switch. Smallest WiFi switch on the market (40x30mm).
+
+### Hardware Specifications
+
+**Chip:** ESP32 (Dual-core 240MHz)
+**Flash:** 4MB
+**Relays:** 1 (10A rating)
+**Size:** 40x30mm
+**Button:** 1
+**External Switch Input:** 1
+
+### GPIO Pinout
+
+| Component | GPIO | Notes |
+|-----------|------|-------|
+| Relay | GPIO26 | Output control |
+| Button | GPIO0 | Manual control button |
+| External Switch | GPIO4 | Physical wall switch input |
+| LED | GPIO19 | Status indicator |
+
+### Features
+
+- ✅ **Ultra-Compact** - Smallest WiFi switch (40x30mm)
+- ✅ **ESP32 Power** - Bluetooth and advanced features
+- ✅ **Physical Switch Support** - Connects to wall switches
+- ✅ **10A Rating** - Suitable for most lighting
+- ⚠️ **No Power Monitoring** - Use POW Elite for monitoring
+
+### Usage Example
+
+```yaml
+substitutions:
+  device_name: closet-light
+  friendly_name: "Closet Light"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+
+packages:
+  sonoff:
+    url: https://github.com/heytcass/esphome-device-library
+    ref: main
+    files:
+      - common/base.yaml
+      - common/esp32-platform.yaml
+      - common/esp32-ble.yaml
+      - common/diagnostics.yaml
+      - devices/sonoff/mini-r4.yaml
+    refresh: 1d
+
+wifi:
+  ap:
+    ssid: "${friendly_name} Fallback"
+```
+
+### Community Notes
+
+- **Tested ESPHome Versions:** 2024.11.0+
+- **Use Cases:** Tight spaces, minimal installations
+- **Successor to:** Sonoff Mini (ESP8266)
+
+---
+
+## Shelly Plus 1PM
+
+### Overview
+ESP32-based in-wall smart switch with power monitoring. Combines relay control with energy tracking.
+
+### Hardware Specifications
+
+**Chip:** ESP32 (Dual-core 240MHz)
+**Flash:** 4MB
+**Power Monitoring:** BL0942 (UART)
+**Relays:** 1 (16A rating)
+**Switch Input:** 1
+**Button:** 1
+**Temperature Sensor:** NTC thermistor
+
+### GPIO Pinout
+
+| Component | GPIO | Notes |
+|-----------|------|-------|
+| Relay | GPIO26 | 16A output |
+| Switch Input | GPIO4 | Physical switch connection |
+| Button | GPIO25 | Manual control |
+| LED | GPIO0 | Status indicator |
+| BL0942 RX | GPIO35 | UART power monitoring |
+| NTC Sensor | GPIO32 | Temperature monitoring |
+
+### Features
+
+- ✅ **Power Monitoring** - Voltage, current, power, energy, frequency
+- ✅ **Energy Tracking** - Compatible with Home Assistant Energy Dashboard
+- ✅ **Temperature Monitoring** - Built-in NTC sensor
+- ✅ **ESP32 Power** - Bluetooth support
+- ✅ **16A Rating** - High current capacity
+
+### Usage Example
+
+```yaml
+substitutions:
+  device_name: space-heater
+  friendly_name: "Space Heater"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+
+packages:
+  shelly:
+    url: https://github.com/heytcass/esphome-device-library
+    ref: main
+    files:
+      - common/base.yaml
+      - common/esp32-platform.yaml
+      - common/esp32-ble.yaml
+      - common/diagnostics.yaml
+      - devices/shelly/plus-1pm.yaml
+    refresh: 1d
+
+wifi:
+  ap:
+    ssid: "${friendly_name} Fallback"
+```
+
+### Community Notes
+
+- **Tested ESPHome Versions:** 2024.11.0+
+- **Use Cases:** High-power devices, appliance monitoring
+- **Compared to Plus 1:** Adds power monitoring and temperature sensor
+
+---
+
 ## Adding More Devices
 
 Want to document a new device? See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
