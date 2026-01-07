@@ -43,8 +43,12 @@ jobs:
 
       - name: Compile firmware
         env:
-          FIRMWARE_VERSION: ${{ github.event.release.tag_name || 'dev' }}
-        run: esphome compile ${{ matrix.config }}
+          # Strip 'v' prefix for consistent version comparison (e.g., v1.0.8 -> 1.0.8)
+          FIRMWARE_VERSION: ${{ github.event.release.tag_name && format('{0}', github.event.release.tag_name) || 'dev' }}
+        run: |
+          # Strip 'v' prefix if present
+          export FIRMWARE_VERSION="${FIRMWARE_VERSION#v}"
+          esphome compile ${{ matrix.config }}
 
       - name: Find firmware binary
         id: firmware
@@ -89,7 +93,9 @@ jobs:
           DEVICE_NAME="${{ steps.firmware.outputs.device_name }}"
           CHIP_FAMILY="${{ steps.firmware.outputs.chip_family }}"
           MD5="${{ steps.md5.outputs.hash }}"
+          # Strip 'v' prefix from version for proper comparison (e.g., v1.0.8 -> 1.0.8)
           VERSION="${{ github.event.release.tag_name || 'dev' }}"
+          VERSION="${VERSION#v}"
 
           cat > "${DEVICE_NAME}-manifest.json" << EOF
           {
