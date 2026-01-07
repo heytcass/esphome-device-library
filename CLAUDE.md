@@ -170,8 +170,9 @@ packages:
 
 **GitHub Release workflow:**
 - Releases trigger the build workflow automatically
+- Firmware is deployed to GitHub Pages (no redirects, ESP-friendly)
 - Each device gets: `.bin` (firmware), `.md5` (checksum), `-manifest.json` (version info)
-- Manifest URL pattern: `https://github.com/USER/REPO/releases/latest/download/DEVICE_NAME-manifest.json`
+- Manifest URL pattern: `https://heytcass.github.io/esphome-device-library/DEVICE_NAME-manifest.json`
 
 ### Naming Conventions
 

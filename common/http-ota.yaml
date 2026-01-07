@@ -31,10 +31,10 @@ ota:
   - platform: http_request
 
 # Firmware update component
-# Checks GitHub Releases for new firmware via JSON manifest
+# Checks GitHub Pages for new firmware via JSON manifest (no redirects, ESP-friendly)
 # Uses ${firmware_name} substitution set by hardware device file
 update:
   - platform: http_request
     name: "Firmware Update"
-    source: "https://github.com/heytcass/esphome-device-library/releases/latest/download/${firmware_name}-manifest.json"
+    source: "https://heytcass.github.io/esphome-device-library/${firmware_name}-manifest.json"
     update_interval: 6h  # Check for updates every 6 hours

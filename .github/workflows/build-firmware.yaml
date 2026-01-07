@@ -95,6 +95,7 @@ jobs:
           {
             "name": "${DEVICE_NAME}",
             "version": "${VERSION}",
+            "home_assistant_domain": "esphome",
             "builds": [
               {
                 "chipFamily": "${CHIP_FAMILY}",
@@ -125,7 +126,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload firmware as artifact
-        if: github.event_name != 'release'
         uses: actions/upload-artifact@v4
         with:
           name: firmware-${{ steps.firmware.outputs.device_name }}
@@ -134,3 +134,29 @@ jobs:
             ${{ steps.firmware.outputs.device_name }}.md5
             ${{ steps.firmware.outputs.device_name }}-manifest.json
           retention-days: 7
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all firmware artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: firmware
+          pattern: firmware-*
+          merge-multiple: true
+
+      - name: List downloaded files
+        run: ls -la firmware/
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./firmware
+          keep_files: false
+          commit_message: "Deploy firmware ${{ github.event.release.tag_name }}"
