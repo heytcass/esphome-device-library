@@ -24,13 +24,10 @@ ota:
   - platform: http_request
 
 # Firmware update component
-# Checks GitHub Releases for new firmware binaries
+# Checks GitHub Releases for new firmware via JSON manifest
 # Uses ${firmware_name} substitution set by hardware device file
 update:
   - platform: http_request
     name: "Firmware Update"
-    source: "https://github.com/heytcass/esphome-device-library/releases/latest/download/${firmware_name}.bin"
+    source: "https://github.com/heytcass/esphome-device-library/releases/latest/download/${firmware_name}-manifest.json"
     update_interval: 6h  # Check for updates every 6 hours
-
-    # Optional: Verify firmware integrity with MD5 hash
-    # md5_url: "https://github.com/heytcass/esphome-device-library/releases/latest/download/${firmware_name}.md5"

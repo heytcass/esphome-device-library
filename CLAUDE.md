@@ -145,9 +145,9 @@ The `http-ota.yaml` package enables devices to pull firmware updates from GitHub
 
 **How it works:**
 1. GitHub Actions automatically builds firmware binaries when releases are published
-2. Binaries are uploaded to GitHub Releases with predictable URLs
-3. Devices check for updates every 6 hours
-4. Users trigger updates via Home Assistant or the ESPHome API
+2. Binaries and JSON manifests are uploaded to GitHub Releases
+3. Devices check the manifest every 6 hours to detect new versions
+4. Users trigger updates via Home Assistant (Settings → System → Updates)
 
 **Configuration:**
 ```yaml
@@ -159,20 +159,19 @@ packages:
 ```
 
 **Requirements:**
-- `${device_name}` substitution must match the example config filename
+- `${firmware_name}` substitution must be set (typically in the hardware device file)
 - Device needs internet access to GitHub
 - Firmware binaries are built automatically via `.github/workflows/build-firmware.yaml`
 
 **Triggering updates:**
-- **Home Assistant**: Click the "Update" button on the firmware update entity
-- **ESPHome Dashboard**: Not applicable (requires pulling firmware)
-- **API**: `curl -X POST http://device-ip/update`
+- **Home Assistant**: Settings → System → Updates, or click "Update" on the firmware entity
+- **Force check**: Call `homeassistant.update_entity` service on the firmware update entity
+- **On boot**: Devices check for updates when they start
 
 **GitHub Release workflow:**
 - Releases trigger the build workflow automatically
-- Each device variant gets its own `.bin` file (e.g., `sonoff-s31-kitchen.bin`)
-- MD5 checksums are generated for integrity verification
-- Firmware URLs follow pattern: `https://github.com/USER/REPO/releases/latest/download/DEVICE_NAME.bin`
+- Each device gets: `.bin` (firmware), `.md5` (checksum), `-manifest.json` (version info)
+- Manifest URL pattern: `https://github.com/USER/REPO/releases/latest/download/DEVICE_NAME-manifest.json`
 
 ### Naming Conventions
 
@@ -205,13 +204,14 @@ Runs on every push and pull request:
 Runs on GitHub Releases and manual trigger:
 - Compiles firmware binaries for all device configurations
 - Generates MD5 checksums for integrity verification
-- Uploads `.bin` and `.md5` files to GitHub Releases
+- Generates JSON manifests with version info for OTA detection
+- Uploads `.bin`, `.md5`, and `-manifest.json` files to GitHub Releases
 - Enables HTTP-based OTA updates for devices using `common/http-ota.yaml`
 
 **To publish new firmware:**
 1. Create a new GitHub Release (e.g., `v1.0.0`)
-2. Workflow automatically builds and attaches firmware binaries
-3. Devices with HTTP OTA enabled will detect the update within 6 hours
+2. Workflow automatically builds and attaches firmware binaries + manifests
+3. Devices with HTTP OTA enabled will detect the update within 6 hours (or on next boot)
 
 ## Common Gotchas
 
