@@ -1,0 +1,34 @@
+# HTTP-based OTA Updates
+# Include this package AFTER base.yaml to enable automatic firmware updates from GitHub Releases
+#
+# Prerequisites:
+# - GitHub Actions must build and publish firmware binaries
+# - Device must have internet access to GitHub
+# - ${device_name} substitution must be defined
+#
+# Usage in device config:
+# packages:
+#   base: !include ../../common/base.yaml
+#   http_ota: !include ../../common/http-ota.yaml  # Add this line
+#   platform: !include ../../common/esp8266-platform.yaml
+#   ...
+
+# Required component for HTTP requests
+http_request:
+  verify_ssl: false  # Required for HTTPS on ESP8266; ESP32 with ESP-IDF can verify certificates
+  timeout: 10min
+
+# Override OTA configuration from base.yaml
+ota:
+  - platform: http_request
+
+# Firmware update component
+# Checks GitHub Releases for new firmware binaries
+update:
+  - platform: http_request
+    name: "Firmware Update"
+    source: "https://github.com/heytcass/esphome-device-library/releases/latest/download/${device_name}.bin"
+    update_interval: 6h  # Check for updates every 6 hours
+
+    # Optional: Verify firmware integrity with MD5 hash
+    # md5_url: "https://github.com/heytcass/esphome-device-library/releases/latest/download/${device_name}.md5"

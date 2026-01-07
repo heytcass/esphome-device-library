@@ -9,6 +9,7 @@ esphome:
 
 packages:
   base: !include ../../common/base.yaml
+  http_ota: !include ../../common/http-ota.yaml
   platform: !include ../../common/esp32-platform.yaml
   diagnostics: !include ../../common/diagnostics.yaml
   web_server: !include ../../common/web-server.yaml

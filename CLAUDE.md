@@ -132,11 +132,47 @@ pip install esphome
 
 Optional features are separate includes to keep base configs minimal:
 
+- `common/http-ota.yaml` - **HTTP-based OTA updates** - Enables automatic firmware updates from GitHub Releases. Devices check for updates every 6 hours and can be updated via Home Assistant with one click.
 - `common/web-server.yaml` - Adds web UI on port 80
 - `common/static-ip.yaml` - For networks with mDNS issues (requires substitution: wifi_static_ip; requires secrets: wifi_gateway, wifi_subnet)
 - `common/esp32-ble.yaml` - BLE proxy and tracker (ESP32 only)
 
 Include these AFTER base.yaml to override/extend functionality.
+
+#### HTTP OTA Updates - Automated Firmware Distribution
+
+The `http-ota.yaml` package enables devices to pull firmware updates from GitHub Releases:
+
+**How it works:**
+1. GitHub Actions automatically builds firmware binaries when releases are published
+2. Binaries are uploaded to GitHub Releases with predictable URLs
+3. Devices check for updates every 6 hours
+4. Users trigger updates via Home Assistant or the ESPHome API
+
+**Configuration:**
+```yaml
+packages:
+  base: !include ../../common/base.yaml
+  http_ota: !include ../../common/http-ota.yaml  # Add this line
+  platform: !include ../../common/esp8266-platform.yaml
+  # ... other packages
+```
+
+**Requirements:**
+- `${device_name}` substitution must match the example config filename
+- Device needs internet access to GitHub
+- Firmware binaries are built automatically via `.github/workflows/build-firmware.yaml`
+
+**Triggering updates:**
+- **Home Assistant**: Click the "Update" button on the firmware update entity
+- **ESPHome Dashboard**: Not applicable (requires pulling firmware)
+- **API**: `curl -X POST http://device-ip/update`
+
+**GitHub Release workflow:**
+- Releases trigger the build workflow automatically
+- Each device variant gets its own `.bin` file (e.g., `sonoff-s31-kitchen.bin`)
+- MD5 checksums are generated for integrity verification
+- Firmware URLs follow pattern: `https://github.com/USER/REPO/releases/latest/download/DEVICE_NAME.bin`
 
 ### Naming Conventions
 
@@ -153,14 +189,29 @@ Follow ESPHome entity_category patterns:
 - `entity_category: config` - Configuration entities (restart button, safe mode)
 - No category - User-facing sensors/switches (power monitoring, relays)
 
-## CI Validation
+## CI/CD Workflows
 
-GitHub Actions validates all example configs on push/PR:
+### Validation Workflow (`.github/workflows/validate.yaml`)
+
+Runs on every push and pull request:
 - Matrix strategy tests each example independently
 - Creates dummy secrets.yaml for validation
 - Runs `esphome config` (validation only, no compilation)
 
-**When adding devices**: Always add corresponding example to CI matrix.
+**When adding devices**: Always add corresponding example to validation matrix.
+
+### Build Firmware Workflow (`.github/workflows/build-firmware.yaml`)
+
+Runs on GitHub Releases and manual trigger:
+- Compiles firmware binaries for all device configurations
+- Generates MD5 checksums for integrity verification
+- Uploads `.bin` and `.md5` files to GitHub Releases
+- Enables HTTP-based OTA updates for devices using `common/http-ota.yaml`
+
+**To publish new firmware:**
+1. Create a new GitHub Release (e.g., `v1.0.0`)
+2. Workflow automatically builds and attaches firmware binaries
+3. Devices with HTTP OTA enabled will detect the update within 6 hours
 
 ## Common Gotchas
 

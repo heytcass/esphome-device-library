@@ -1,0 +1,96 @@
+name: Build Firmware
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:  # Allow manual trigger for testing
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        config:
+          # One firmware per device type
+          - firmware/wyze-outdoor-plug.yaml
+          - firmware/sonoff-s31.yaml
+          - firmware/athom-pg01v3-eu.yaml
+          - firmware/airgradient-one-v9.yaml
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install ESPHome
+        run: pip install esphome
+
+      - name: Create secrets.yaml
+        run: |
+          cat > secrets.yaml << EOF
+          wifi_ssid: "test-network"
+          wifi_password: "test-password"
+          api_encryption_key: "rBPmvFdSW1At4ksEt3ut050Vcx6mVIeXBc46XNKF3Q8="
+          ota_password: "test-ota-password"
+          ap_password: "test-ap-password"
+          wifi_gateway: "192.168.1.1"
+          wifi_subnet: "255.255.255.0"
+          EOF
+
+      - name: Compile firmware
+        run: esphome compile ${{ matrix.config }}
+
+      - name: Find firmware binary
+        id: firmware
+        run: |
+          # ESPHome builds to <config_dir>/.esphome/build/<device_name>/.pioenvs/<device_name>/firmware.bin
+          # Find the firmware binary dynamically
+          FIRMWARE_PATH=$(find . -path "*/.pioenvs/*/firmware.bin" 2>/dev/null | head -1)
+
+          if [ -z "${FIRMWARE_PATH}" ] || [ ! -f "${FIRMWARE_PATH}" ]; then
+            echo "Error: Firmware not found"
+            find . -name "firmware.bin" 2>/dev/null || true
+            exit 1
+          fi
+
+          # Extract device name from the path (the directory name inside .pioenvs/)
+          DEVICE_NAME=$(basename $(dirname "${FIRMWARE_PATH}"))
+
+          echo "path=${FIRMWARE_PATH}" >> $GITHUB_OUTPUT
+          echo "device_name=${DEVICE_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Generate MD5 checksum
+        run: |
+          DEVICE_NAME="${{ steps.firmware.outputs.device_name }}"
+          FIRMWARE_PATH="${{ steps.firmware.outputs.path }}"
+          md5sum "${FIRMWARE_PATH}" | cut -d' ' -f1 > "${DEVICE_NAME}.md5"
+
+      - name: Rename firmware binary
+        run: |
+          DEVICE_NAME="${{ steps.firmware.outputs.device_name }}"
+          FIRMWARE_PATH="${{ steps.firmware.outputs.path }}"
+          cp "${FIRMWARE_PATH}" "${DEVICE_NAME}.bin"
+
+      - name: Upload firmware to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ${{ steps.firmware.outputs.device_name }}.bin
+            ${{ steps.firmware.outputs.device_name }}.md5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload firmware as artifact
+        if: github.event_name != 'release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-${{ steps.firmware.outputs.device_name }}
+          path: |
+            ${{ steps.firmware.outputs.device_name }}.bin
+            ${{ steps.firmware.outputs.device_name }}.md5
+          retention-days: 7

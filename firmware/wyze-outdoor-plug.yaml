@@ -1,0 +1,23 @@
+# Firmware build config for Wyze Outdoor Plug
+# Users flash this, then adopt via ESPHome dashboard with their own name
+
+substitutions:
+  device_name: wyze-outdoor-plug
+  friendly_name: "Wyze Outdoor Plug"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: true  # Ensures unique names when multiple devices use same firmware
+
+packages:
+  base: !include ../common/base.yaml
+  http_ota: !include ../common/http-ota.yaml
+  platform: !include ../common/esp32-platform.yaml
+  ble: !include ../common/esp32-ble.yaml
+  diagnostics: !include ../common/diagnostics.yaml
+  hardware: !include ../devices/wyze/outdoor-plug.yaml
+
+wifi:
+  ap:
+    ssid: "${friendly_name} Fallback"
