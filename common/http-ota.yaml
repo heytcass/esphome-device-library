@@ -26,15 +26,17 @@ http_request:
   verify_ssl: false  # Required for HTTPS on ESP8266; ESP32 with ESP-IDF can verify certificates
   timeout: 10min
 
-# Override OTA configuration from base.yaml
+# Add HTTP OTA platform (supplements esphome platform from base.yaml)
 ota:
   - platform: http_request
+    id: ota_http_request
 
 # Firmware update component
 # Checks GitHub Pages for new firmware via JSON manifest (no redirects, ESP-friendly)
 # Uses ${firmware_name} substitution set by hardware device file
 update:
   - platform: http_request
+    id: update_http_request
     name: "Firmware Update"
     source: "https://heytcass.github.io/esphome-device-library/${firmware_name}-manifest.json"
-    update_interval: 6h  # Check for updates every 6 hours
+    update_interval: 6h
