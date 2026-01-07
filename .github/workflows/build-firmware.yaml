@@ -4,14 +4,6 @@ on:
   release:
     types: [published]
   workflow_dispatch:  # Allow manual trigger for testing
-  push:
-    branches:
-      - claude/automate-esphome-builds-8GU7P  # Test on this branch
-    paths:
-      - 'firmware/*.yaml'
-      - 'common/*.yaml'
-      - 'devices/**/*.yaml'
-      - '.github/workflows/build-firmware.yaml'
 
 jobs:
   build:
