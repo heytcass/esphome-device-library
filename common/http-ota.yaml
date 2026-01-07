@@ -4,13 +4,14 @@
 # Prerequisites:
 # - GitHub Actions must build and publish firmware binaries
 # - Device must have internet access to GitHub
-# - ${device_name} substitution must be defined
+# - ${firmware_name} substitution must be defined (set in hardware device file)
 #
 # Usage in device config:
 # packages:
 #   base: !include ../../common/base.yaml
 #   http_ota: !include ../../common/http-ota.yaml  # Add this line
 #   platform: !include ../../common/esp8266-platform.yaml
+#   hardware: !include ../../devices/brand/model.yaml  # Sets firmware_name
 #   ...
 
 # Required component for HTTP requests
@@ -24,11 +25,12 @@ ota:
 
 # Firmware update component
 # Checks GitHub Releases for new firmware binaries
+# Uses ${firmware_name} substitution set by hardware device file
 update:
   - platform: http_request
     name: "Firmware Update"
-    source: "https://github.com/heytcass/esphome-device-library/releases/latest/download/${device_name}.bin"
+    source: "https://github.com/heytcass/esphome-device-library/releases/latest/download/${firmware_name}.bin"
     update_interval: 6h  # Check for updates every 6 hours
 
     # Optional: Verify firmware integrity with MD5 hash
-    # md5_url: "https://github.com/heytcass/esphome-device-library/releases/latest/download/${device_name}.md5"
+    # md5_url: "https://github.com/heytcass/esphome-device-library/releases/latest/download/${firmware_name}.md5"
