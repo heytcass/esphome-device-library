@@ -1,13 +1,13 @@
 {
   "name": "athom-pg01v3-eu",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "home_assistant_domain": "esphome",
   "builds": [
     {
       "chipFamily": "ESP32",
       "ota": {
         "path": "athom-pg01v3-eu.bin",
-        "md5": "74fea3a9e0c45d45802640a0fa3ba460"
+        "md5": "d634ae7bbb85653982e09db2a3b65925"
       }
     }
   ]

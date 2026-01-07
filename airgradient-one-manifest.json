@@ -1,13 +1,13 @@
 {
   "name": "airgradient-one",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "home_assistant_domain": "esphome",
   "builds": [
     {
       "chipFamily": "ESP32",
       "ota": {
         "path": "airgradient-one.bin",
-        "md5": "f12c9dbfa30499c2fa26234ff39136cd"
+        "md5": "2c9a6d66a24d19fbab6634133be7ba2c"
       }
     }
   ]
