@@ -9,6 +9,9 @@ esphome:
   name: ${device_name}
   friendly_name: ${friendly_name}
   name_add_mac_suffix: true  # Ensures unique names when multiple devices use same firmware
+  project:
+    name: "heytcass.esphome-device-library"
+    version: !env_var FIRMWARE_VERSION dev
 
 packages:
   base: !include ../common/base.yaml
