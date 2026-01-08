@@ -14,16 +14,13 @@ logger:
     component: ERROR
 
 # API for Home Assistant connection
-# Uses a default key - users can override in their config if desired
+# No encryption by default - users can add encryption in their own config
 api:
-  encryption:
-    key: "XZMX08sq9cBFIdnY21lnPT0ixuMWjEsMBBGMVBdmFPE="
   reboot_timeout: 15min
 
-# OTA updates
+# OTA updates - no password by default for easy recovery
 ota:
   - platform: esphome
-    password: "esphome-device-library"
 
 safe_mode:
 
