@@ -14,40 +14,45 @@ Unlike static config collections that rot over time, devices using this library 
 |--------|----------|----------|
 | [Wyze Outdoor Plug](devices/wyze/outdoor-plug.yaml) | ESP32 | Dual outlets, power monitoring, light sensor |
 
-## Quick Start
+## Quick Start (ESPHome Dashboard)
 
-### 1. Create secrets.yaml
+### 1. Create a new device
 
-```bash
-cp secrets.yaml.example secrets.yaml
-# Edit with your WiFi credentials and API key
-```
+In ESPHome Dashboard: **New Device** → **Continue** → **Skip**
 
-Generate an API encryption key:
-```bash
-openssl rand -base64 32
-```
+### 2. Paste this configuration
 
-### 2. Copy and customize an example
-
-```bash
-cp examples/wyze-outdoor-plug.yaml my-patio-plug.yaml
-```
-
-Edit `my-patio-plug.yaml` and change the substitutions:
 ```yaml
 substitutions:
-  device_name: wyze-outdoor-plug-patio     # Unique name for this device
-  friendly_name: "Patio Outdoor Plug"      # Shows in Home Assistant
+  device_name: wyze-outdoor-plug-patio     # Change this! Must be unique
+  friendly_name: "Patio Outdoor Plug"      # Change this! Shows in Home Assistant
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+
+packages:
+  base:
+    url: https://github.com/heytcass/esphome-device-library
+    ref: main
+    files:
+      - common/base.yaml
+      - common/http-ota.yaml
+      - common/esp32-platform.yaml
+      - common/diagnostics.yaml
+      - devices/wyze/outdoor-plug.yaml
+    refresh: 1d
+
+wifi:
+  ap:
+    ssid: "${friendly_name} Fallback"
 ```
 
-### 3. Flash your device
+### 3. Install
 
-```bash
-esphome run my-patio-plug.yaml
-```
+Click **Install** and choose your method (USB for first flash, then OTA works automatically).
 
-After initial flash via USB, the device will automatically check for updates every 6 hours.
+After initial flash, the device will check for updates every 6 hours.
 
 ## How Automatic Updates Work
 
@@ -68,20 +73,6 @@ examples/         # Templates to copy and customize
 ## Architecture
 
 See [PROJECT.md](PROJECT.md) for full architecture details, contribution guidelines, and project vision.
-
-## Development
-
-**NixOS users:** Environment auto-loads via direnv
-
-**Others:**
-```bash
-pip install esphome
-```
-
-Validate a config:
-```bash
-esphome config examples/wyze-outdoor-plug.yaml
-```
 
 ## Links
 

@@ -2,11 +2,11 @@
 # Copy this file and customize the substitutions for your device
 #
 # Getting Started:
-# 1. Copy this file to your ESPHome config directory
-# 2. Rename to something like "wyze-outdoor-plug-patio.yaml"
-# 3. Update the substitutions below with your device name
-# 4. Create secrets.yaml with your WiFi credentials (see secrets.yaml.example)
-# 5. Flash via USB: esphome run wyze-outdoor-plug-patio.yaml
+# 1. In ESPHome Dashboard, click "New Device" → "Continue" → "Skip"
+# 2. Name your device (e.g., "wyzeoutdoor-patio")
+# 3. Click "Edit" and paste this configuration
+# 4. Update the substitutions below with your device name
+# 5. Click "Install" and choose your installation method
 #
 # After initial flash, the device will receive automatic OTA updates
 # when new releases are published to the GitHub repository.
@@ -20,11 +20,16 @@ esphome:
   friendly_name: ${friendly_name}
 
 packages:
-  base: !include ../common/base.yaml
-  http_ota: !include ../common/http-ota.yaml
-  platform: !include ../common/esp32-platform.yaml
-  diagnostics: !include ../common/diagnostics.yaml
-  hardware: !include ../devices/wyze/outdoor-plug.yaml
+  base:
+    url: https://github.com/heytcass/esphome-device-library
+    ref: main
+    files:
+      - common/base.yaml
+      - common/http-ota.yaml
+      - common/esp32-platform.yaml
+      - common/diagnostics.yaml
+      - devices/wyze/outdoor-plug.yaml
+    refresh: 1d
 
 wifi:
   ap:
