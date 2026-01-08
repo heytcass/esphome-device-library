@@ -1,19 +1,29 @@
 # Base configuration for ALL ESPHome devices
 # Universal services that work on any platform
+#
+# WiFi credentials are NOT compiled in - they're provisioned via:
+# - Captive portal (connect to device AP, enter credentials)
+# - Improv Serial (USB provisioning)
+# - Improv BLE (Bluetooth provisioning, ESP32 only)
+#
+# Credentials are stored in NVS and persist across OTA updates.
 
 logger:
   level: INFO
   logs:
     component: ERROR
 
+# API for Home Assistant connection
+# Uses a default key - users can override in their config if desired
 api:
   encryption:
-    key: !secret api_encryption_key
+    key: "XZMX08sq9cBFIdnY21lnPT0ixuMWjEsMBBGMVBdmFPE="
   reboot_timeout: 15min
 
+# OTA updates
 ota:
   - platform: esphome
-    password: !secret ota_password
+    password: "esphome-device-library"
 
 safe_mode:
 
@@ -22,14 +32,12 @@ captive_portal:
 mdns:
   disabled: false
 
+# WiFi - no compiled credentials, uses stored credentials from NVS
+# On first boot, device creates AP for provisioning via captive portal
 wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
-  fast_connect: true
-  power_save_mode: LIGHT
   ap:
-    password: !secret ap_password
-    # SSID set per-device using ${friendly_name}
+    ssid: "${friendly_name} Setup"
+    password: "esphome123"
 
 time:
   - platform: homeassistant
