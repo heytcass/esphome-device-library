@@ -32,6 +32,7 @@ mdns:
 # WiFi - no compiled credentials, uses stored credentials from NVS
 # On first boot, device creates AP for provisioning via captive portal
 wifi:
+  min_auth_mode: WPA2  # Reject weaker security (ESPHome 2025.11.0+)
   ap:
     ssid: "${friendly_name} Setup"
     password: "esphome123"
@@ -39,8 +40,3 @@ wifi:
 time:
   - platform: homeassistant
     id: homeassistant_time
-
-interval:
-  - interval: 5min
-    then:
-      - logger.log: "Device healthy"

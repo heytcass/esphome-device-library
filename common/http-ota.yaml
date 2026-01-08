@@ -24,7 +24,7 @@ esphome:
 
 # Required component for HTTP requests
 http_request:
-  verify_ssl: false  # Required for HTTPS on ESP8266; ESP32 with ESP-IDF can verify certificates
+  verify_ssl: true  # ESP-IDF has proper TLS support; ESP8266 may need false
   timeout: 10min
 
 # Add HTTP OTA platform (supplements esphome platform from base.yaml)
