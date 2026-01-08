@@ -17,7 +17,6 @@ packages:
   base: !include ../common/base.yaml
   http_ota: !include ../common/http-ota.yaml
   platform: !include ../common/esp32-platform.yaml
-  ble: !include ../common/esp32-ble.yaml
   diagnostics: !include ../common/diagnostics.yaml
   hardware: !include ../devices/wyze/outdoor-plug.yaml
 

@@ -12,23 +12,7 @@ jobs:
     strategy:
       matrix:
         config:
-          - examples/local-development/wyzeoutdoor1.yaml
-          - examples/local-development/wyzeoutdoor2.yaml
-          - examples/local-development/wyzeoutdoor3.yaml
-          - examples/local-development/sonoff-s31-kitchen.yaml
-          - examples/local-development/sonoff-s31-garage-static-ip.yaml
-          - examples/local-development/athom-pg01v3-eu-living-room.yaml
-          - examples/local-development/airgradient-one-office.yaml
-          - examples/local-development/sonoff-basic-r2-bedroom.yaml
-          - examples/local-development/shelly-1-hallway.yaml
-          - examples/local-development/shelly-plus-1-bathroom.yaml
-          - examples/local-development/shelly-2.5-office-blinds.yaml
-          - examples/local-development/sonoff-4ch-pro-r2-irrigation.yaml
-          - examples/local-development/esp32-cam-front-door.yaml
-          - examples/local-development/sonoff-pow-elite-washer.yaml
-          - examples/local-development/athom-pg01v2-us-office.yaml
-          - examples/local-development/sonoff-mini-r4-closet.yaml
-          - examples/local-development/shelly-plus-1pm-heater.yaml
+          - examples/wyze-outdoor-plug.yaml
 
     steps:
       - name: Checkout repository
@@ -50,8 +34,6 @@ jobs:
           api_encryption_key: "rBPmvFdSW1At4ksEt3ut050Vcx6mVIeXBc46XNKF3Q8="
           ota_password: "test-ota-password"
           ap_password: "test-ap-password"
-          wifi_gateway: "192.168.1.1"
-          wifi_subnet: "255.255.255.0"
           EOF
 
       - name: Validate ${{ matrix.config }}

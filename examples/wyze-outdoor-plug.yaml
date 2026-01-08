@@ -1,0 +1,31 @@
+# Wyze Outdoor Plug - Example Configuration
+# Copy this file and customize the substitutions for your device
+#
+# Getting Started:
+# 1. Copy this file to your ESPHome config directory
+# 2. Rename to something like "wyze-outdoor-plug-patio.yaml"
+# 3. Update the substitutions below with your device name
+# 4. Create secrets.yaml with your WiFi credentials (see secrets.yaml.example)
+# 5. Flash via USB: esphome run wyze-outdoor-plug-patio.yaml
+#
+# After initial flash, the device will receive automatic OTA updates
+# when new releases are published to the GitHub repository.
+
+substitutions:
+  device_name: wyze-outdoor-plug-patio     # Change this! Must be unique per device
+  friendly_name: "Patio Outdoor Plug"      # Change this! Shows in Home Assistant
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+
+packages:
+  base: !include ../common/base.yaml
+  http_ota: !include ../common/http-ota.yaml
+  platform: !include ../common/esp32-platform.yaml
+  diagnostics: !include ../common/diagnostics.yaml
+  hardware: !include ../devices/wyze/outdoor-plug.yaml
+
+wifi:
+  ap:
+    ssid: "${friendly_name} Fallback"

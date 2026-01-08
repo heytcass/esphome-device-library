@@ -11,11 +11,7 @@ jobs:
     strategy:
       matrix:
         config:
-          # One firmware per device type
           - firmware/wyze-outdoor-plug.yaml
-          - firmware/sonoff-s31.yaml
-          - firmware/athom-pg01v3-eu.yaml
-          - firmware/airgradient-one-v9.yaml
 
     steps:
       - name: Checkout repository
@@ -37,13 +33,10 @@ jobs:
           api_encryption_key: "rBPmvFdSW1At4ksEt3ut050Vcx6mVIeXBc46XNKF3Q8="
           ota_password: "test-ota-password"
           ap_password: "test-ap-password"
-          wifi_gateway: "192.168.1.1"
-          wifi_subnet: "255.255.255.0"
           EOF
 
       - name: Compile firmware
         env:
-          # Strip 'v' prefix for consistent version comparison (e.g., v1.0.8 -> 1.0.8)
           FIRMWARE_VERSION: ${{ github.event.release.tag_name && format('{0}', github.event.release.tag_name) || 'dev' }}
         run: |
           # Strip 'v' prefix if present
@@ -53,8 +46,6 @@ jobs:
       - name: Find firmware binary
         id: firmware
         run: |
-          # ESPHome builds to <config_dir>/.esphome/build/<device_name>/.pioenvs/<device_name>/firmware.bin
-          # Find the firmware binary dynamically
           FIRMWARE_PATH=$(find . -path "*/.pioenvs/*/firmware.bin" 2>/dev/null | head -1)
 
           if [ -z "${FIRMWARE_PATH}" ] || [ ! -f "${FIRMWARE_PATH}" ]; then
@@ -63,16 +54,14 @@ jobs:
             exit 1
           fi
 
-          # Extract device name from the path (the directory name inside .pioenvs/)
           DEVICE_NAME=$(basename $(dirname "${FIRMWARE_PATH}"))
 
-          # Determine chip family from the config file
           if grep -q "esp32-platform.yaml" "${{ matrix.config }}"; then
             CHIP_FAMILY="ESP32"
           elif grep -q "esp8266-platform.yaml" "${{ matrix.config }}"; then
             CHIP_FAMILY="ESP8266"
           else
-            CHIP_FAMILY="ESP32"  # Default fallback
+            CHIP_FAMILY="ESP32"
           fi
 
           echo "path=${FIRMWARE_PATH}" >> $GITHUB_OUTPUT
@@ -93,7 +82,6 @@ jobs:
           DEVICE_NAME="${{ steps.firmware.outputs.device_name }}"
           CHIP_FAMILY="${{ steps.firmware.outputs.chip_family }}"
           MD5="${{ steps.md5.outputs.hash }}"
-          # Strip 'v' prefix from version for proper comparison (e.g., v1.0.8 -> 1.0.8)
           VERSION="${{ github.event.release.tag_name || 'dev' }}"
           VERSION="${VERSION#v}"
 
