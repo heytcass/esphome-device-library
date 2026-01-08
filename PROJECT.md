@@ -2,9 +2,9 @@
 
 ## The Problem We're Solving
 
-**https://devices.esphome.io/ is a graveyard.**
+**Device configs become stagnant after they're published.**
 
-Once a device config is added, no one updates it. Better calibration values, new ESPHome features, security fixes - they all get shared in Discord threads and forum posts where they're impossible to find. Every user ends up maintaining their own fork of configs that slowly drift apart.
+The official https://devices.esphome.io/ database is a valuable resource that's actively growing with new device contributions. But once a config is added, it rarely gets updated. Better calibration values, new ESPHome features, security fixes - they all get shared in Discord threads and forum posts where they're impossible to find. Every user ends up maintaining their own fork of configs that slowly drift apart.
 
 ## The Solution: Living, Auto-Updating Configs
 
@@ -189,4 +189,4 @@ Before making ANY change:
 
 - **Source**: https://github.com/heytcass/esphome-device-library
 - **Firmware Manifests**: https://heytcass.github.io/esphome-device-library/
-- **Reference**: https://devices.esphome.io/ (what we're improving upon)
+- **Reference**: https://devices.esphome.io/ (official ESPHome device database)
