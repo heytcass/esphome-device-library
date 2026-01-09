@@ -1,0 +1,82 @@
+# Sonoff S31 - WiFi Smart Plug with Power Monitoring
+# ESP8266-based plug with CSE7766 power monitoring IC
+
+substitutions:
+  firmware_name: "sonoff-s31"
+
+# Board configuration
+esp8266:
+  board: esp01_1m
+
+# USB/Serial provisioning
+improv_serial:
+
+# UART for CSE7766 power monitoring
+uart:
+  rx_pin: RX
+  baud_rate: 4800
+  parity: EVEN
+
+# Power monitoring sensor
+sensor:
+  - platform: cse7766
+    current:
+      name: "Current"
+      accuracy_decimals: 2
+      filters:
+        - throttle_average: 60s
+    voltage:
+      name: "Voltage"
+      accuracy_decimals: 1
+      filters:
+        - throttle_average: 60s
+    power:
+      name: "Power"
+      id: power
+      accuracy_decimals: 1
+      filters:
+        - throttle_average: 60s
+    energy:
+      name: "Energy"
+      unit_of_measurement: kWh
+      accuracy_decimals: 3
+      filters:
+        - multiply: 0.001
+
+  - platform: total_daily_energy
+    name: "Daily Energy"
+    power_id: power
+    unit_of_measurement: kWh
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+
+# Physical button
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "Button"
+    internal: true
+    filters:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+    on_press:
+      - switch.toggle: relay
+
+# Relay control
+switch:
+  - platform: gpio
+    pin: GPIO12
+    name: "Relay"
+    id: relay
+    restore_mode: RESTORE_DEFAULT_OFF
+
+# Status LED (active low)
+# Shows WiFi/API connection status automatically
+status_led:
+  pin:
+    number: GPIO13
+    inverted: true

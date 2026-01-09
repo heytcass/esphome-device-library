@@ -23,8 +23,9 @@ esphome:
     version: !env_var FIRMWARE_VERSION 0.0.0
 
 # Required component for HTTP requests
+# verify_ssl defaults to true (ESP32 ESP-IDF); ESP8266 devices should set to false
 http_request:
-  verify_ssl: true  # ESP-IDF has proper TLS support; ESP8266 may need false
+  verify_ssl: ${verify_ssl}
   timeout: 10min
 
 # Add HTTP OTA platform (supplements esphome platform from base.yaml)

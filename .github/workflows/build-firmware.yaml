@@ -12,6 +12,7 @@ jobs:
       matrix:
         config:
           - firmware/wyze-outdoor-plug.yaml
+          - firmware/sonoff-s31.yaml
 
     steps:
       - name: Checkout repository

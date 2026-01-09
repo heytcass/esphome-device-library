@@ -13,6 +13,7 @@ jobs:
       matrix:
         config:
           - examples/wyze-outdoor-plug.yaml
+          - examples/sonoff-s31.yaml
 
     steps:
       - name: Checkout repository
