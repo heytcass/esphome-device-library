@@ -60,6 +60,12 @@ Once Wyze is proven, document the pattern for adding new devices:
 - Device template showing package structure
 - CI/CD automatically validates new device configs
 
+**Exit Criteria for Phase 2**:
+- [ ] CONTRIBUTING.md with step-by-step device addition guide
+- [ ] WiFi provisioning flow documented in README
+- [ ] Example file serves as clear template for new devices
+- [ ] CI validates all example configs
+
 ### Phase 3: Community Expansion
 Open for community contributions of additional devices:
 - Sonoff, Athom, Shelly, etc.

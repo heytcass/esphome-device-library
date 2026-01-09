@@ -52,7 +52,19 @@ wifi:
 
 Click **Install** and choose your method (USB for first flash, then OTA works automatically).
 
-After initial flash, the device will check for updates every 6 hours.
+### 4. WiFi Setup (First Boot)
+
+After flashing, the device needs WiFi credentials:
+
+1. **Connect to device AP**: Look for WiFi network `<friendly_name> Setup`
+2. **Password**: `esphome123`
+3. **Configure**: Browser opens automatically (or go to http://192.168.4.1)
+4. **Enter your WiFi**: Submit your network SSID and password
+5. **Done**: Device reboots and connects to your network
+
+Credentials are stored in flash and persist across OTA updates.
+
+After initial setup, the device checks for updates every 6 hours.
 
 ## How Automatic Updates Work
 
@@ -70,9 +82,13 @@ firmware/         # Build configs for releases
 examples/         # Templates to copy and customize
 ```
 
+## Contributing
+
+Want to add a new device? See [CONTRIBUTING.md](CONTRIBUTING.md) for step-by-step instructions.
+
 ## Architecture
 
-See [PROJECT.md](PROJECT.md) for full architecture details, contribution guidelines, and project vision.
+See [PROJECT.md](PROJECT.md) for full architecture details and project vision.
 
 ## Links
 
