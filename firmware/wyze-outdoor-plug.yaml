@@ -13,12 +13,22 @@ esphome:
     name: "heytcass.esphome-device-library"
     version: !env_var FIRMWARE_VERSION dev
 
+# Enable adoption in ESPHome Dashboard
+# When adopted, Dashboard generates unique API encryption key per device
+dashboard_import:
+  package_import_url: github://heytcass/esphome-device-library/firmware/wyze-outdoor-plug.yaml@main
+  import_full_config: false
+
 packages:
   base: !include ../common/base.yaml
   http_ota: !include ../common/http-ota.yaml
   platform: !include ../common/esp32-platform.yaml
   diagnostics: !include ../common/diagnostics.yaml
   hardware: !include ../devices/wyze/outdoor-plug.yaml
+
+# BLE provisioning for ESP32 (no button required)
+esp32_improv:
+  authorizer: none
 
 wifi:
   ap:

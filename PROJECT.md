@@ -138,10 +138,43 @@ esphome-device-library/
 
 ---
 
+## Device Provisioning & Adoption Flow
+
+Devices use the [Improv WiFi](https://www.improv-wifi.com/) standard for first-time setup:
+
+```
+1. User flashes firmware via ESPHome Dashboard or web installer
+2. improv_serial prompts for WiFi credentials (in browser)
+3. Device connects to network
+4. ESPHome Dashboard discovers device (via mDNS + project info)
+5. User clicks "Adopt" in Dashboard
+6. Dashboard generates local config with:
+   - Package imports from this GitHub repo
+   - UNIQUE API encryption key (per device!)
+   - Customized device name
+```
+
+### Key Components
+
+| Component | Purpose | Platform |
+|-----------|---------|----------|
+| `improv_serial` | USB/Serial WiFi provisioning | All |
+| `esp32_improv` | BLE WiFi provisioning | ESP32 only |
+| `captive_portal` | Fallback AP with web config | All |
+| `dashboard_import` | Enables Dashboard adoption | All |
+
+### Security Model
+
+- **No credentials compiled into firmware** - WiFi provisioned at runtime via Improv
+- **No shared API encryption keys** - Each device gets unique key during adoption
+- **Credentials stored in NVS** - Persist across OTA updates
+
+---
+
 ## Adding New Devices (Phase 2+)
 
 1. **Create hardware file**: `devices/brand/model.yaml`
-   - Board type and improv_serial
+   - Board type and `improv_serial`
    - GPIO mappings
    - Hardware-specific sensors
    - Set `firmware_name` substitution
@@ -149,6 +182,8 @@ esphome-device-library/
 2. **Create firmware build**: `firmware/brand-model.yaml`
    - Import all common packages (http-ota.yaml is REQUIRED)
    - Import hardware file
+   - Add `dashboard_import` pointing to this file
+   - Add `esp32_improv` for ESP32 devices (BLE provisioning)
 
 3. **Create example**: `examples/brand-model.yaml`
 
