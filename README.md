@@ -13,6 +13,8 @@ Unlike static config collections that rot over time, devices using this library 
 | Device | Platform | Features |
 |--------|----------|----------|
 | [Wyze Outdoor Plug](devices/wyze/outdoor-plug.yaml) | ESP32 | Dual outlets, power monitoring, light sensor |
+| [Sonoff S31](devices/sonoff/s31.yaml) | ESP8266 | Smart plug with power monitoring |
+| [Sonocotta Louder ESP32-S3](devices/sonocotta/louder-esp32s3.yaml) | ESP32-S3 | TAS5805M DAC media player, Spotify Connect, 15-band EQ (**experimental**) |
 
 ## Quick Start (ESPHome Dashboard)
 
@@ -73,6 +75,36 @@ After initial setup, the device checks for updates every 6 hours.
 3. Your device checks for updates and shows "Update Available" in Home Assistant
 4. Click "Install" to update - no cables needed
 
+## Important: Don't Adopt in ESPHome Dashboard
+
+This project follows a **"productized" model** - firmware is pre-built and auto-updates centrally. This is different from typical ESPHome usage where you manage configs locally.
+
+**If you "Adopt" a device in ESPHome Dashboard, you will break automatic updates.**
+
+Here's why: When you adopt a device, Dashboard generates a unique API encryption key and takes over management. But HTTP OTA updates flash the pre-built firmware from GitHub, which doesn't have your unique key - your device becomes unreachable.
+
+### Two Usage Models
+
+| Model | Auto-Updates | API Encryption | Local Control |
+|-------|--------------|----------------|---------------|
+| **Productized** (this project) | ✅ Yes | ❌ No | ❌ No |
+| **DIY** (traditional ESPHome) | ❌ No | ✅ Yes | ✅ Yes |
+
+### For Auto-Updates (Recommended)
+
+1. Flash the pre-built firmware
+2. Use captive portal or Improv for WiFi setup
+3. **Do NOT adopt** in ESPHome Dashboard
+4. Device appears in Home Assistant automatically
+5. Receive automatic updates when community improves configs
+
+### For Full Local Control
+
+If you need API encryption or want to customize configs:
+1. Copy an [example file](examples/) to your local ESPHome
+2. Modify as needed
+3. Manage updates yourself (no automatic OTA from this repo)
+
 ## Project Structure
 
 ```
@@ -94,6 +126,10 @@ See [PROJECT.md](PROJECT.md) for full architecture details and project vision.
 
 - [ESPHome Documentation](https://esphome.io/)
 - [Firmware Manifests](https://heytcass.github.io/esphome-device-library/)
+
+## Acknowledgments
+
+- [Sonocotta](https://github.com/sonocotta) - Louder ESP32-S3 hardware and TAS5805M integration
 
 ## License
 
