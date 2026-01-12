@@ -21,8 +21,8 @@
 # - Announcement ducking (auto-lowers music for TTS)
 
 substitutions:
-  device_name: louder-living-room     # Change this! Must be unique
-  friendly_name: "Living Room Speaker" # Change this! Shows in Home Assistant
+  device_name: louder-living-room  # Change this! Must be unique
+  friendly_name: "Living Room Speaker"  # Change this! Shows in Home Assistant
 
 esphome:
   name: ${device_name}

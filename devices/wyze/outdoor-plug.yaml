@@ -103,7 +103,7 @@ binary_sensor:
     pin:
       number: GPIO18
       mode: INPUT_PULLDOWN
-      inverted: True
+      inverted: true
     name: "Button 1"
     id: button1
     entity_category: diagnostic
@@ -127,7 +127,7 @@ binary_sensor:
     pin:
       number: GPIO17
       mode: INPUT_PULLDOWN
-      inverted: True
+      inverted: true
     name: "Button 2"
     id: button2
     entity_category: diagnostic

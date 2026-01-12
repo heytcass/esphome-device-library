@@ -1,9 +1,26 @@
 name: Build Firmware
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "firmware/**"
+      - "common/**"
+      - "devices/**"
+      - ".github/workflows/build-firmware.yaml"
+  pull_request:
+    paths:
+      - "firmware/**"
+      - "common/**"
+      - "devices/**"
+      - ".github/workflows/build-firmware.yaml"
   release:
     types: [published]
-  workflow_dispatch:  # Allow manual trigger for testing
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -39,7 +56,7 @@ jobs:
 
       - name: Compile firmware
         env:
-          FIRMWARE_VERSION: ${{ github.event.release.tag_name && format('{0}', github.event.release.tag_name) || 'dev' }}
+          FIRMWARE_VERSION: ${{ github.event.release.tag_name || 'dev' }}
         run: |
           # Strip 'v' prefix if present
           export FIRMWARE_VERSION="${FIRMWARE_VERSION#v}"

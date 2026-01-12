@@ -1,0 +1,30 @@
+---
+extends: default
+
+ignore:
+  - ".esphome/"
+  - "*/.esphome/"
+  - "**/.esphome/"
+
+rules:
+  # ESPHome configs and URLs can be long
+  line-length:
+    max: 120
+    allow-non-breakable-words: true
+    allow-non-breakable-inline-mappings: true
+
+  # ESPHome packages don't use document start markers
+  document-start: disable
+
+  # GitHub Actions uses 'on:' which triggers truthy warnings
+  truthy:
+    allowed-values: ['true', 'false', 'on']
+
+  # Allow flexible bracket spacing for readability
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+
+  # Comments don't need space after # for commented-out code
+  comments:
+    require-starting-space: false
