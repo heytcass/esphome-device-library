@@ -10,7 +10,7 @@
 # 3. Connect and configure WiFi
 
 substitutions:
-  device_name: sendspin-tab5-living-room  # Change this! Must be unique
+  device_name: sendspin-tab5-lr  # Change this! Must be unique (keep short for AP SSID)
   friendly_name: "Living Room Tab5"  # Change this! Shows in Home Assistant
 
 esphome:

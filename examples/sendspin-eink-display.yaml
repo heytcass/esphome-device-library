@@ -9,7 +9,7 @@
 # 3. Connect and configure WiFi
 
 substitutions:
-  device_name: sendspin-eink-livingroom  # Change this! Must be unique
+  device_name: sendspin-eink-lr  # Change this! Must be unique (keep short for AP SSID)
   friendly_name: "Living Room Sendspin"  # Change this! Shows in Home Assistant
 
 esphome:
