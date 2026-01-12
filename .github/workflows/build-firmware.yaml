@@ -27,10 +27,18 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        config:
-          - firmware/wyze-outdoor-plug.factory.yaml
-          - firmware/sonoff-s31.factory.yaml
-          - firmware/sonocotta-louder-esp32s3.factory.yaml
+        include:
+          - config: firmware/wyze-outdoor-plug.factory.yaml
+            chip_family: ESP32
+          - config: firmware/sonoff-s31.factory.yaml
+            chip_family: ESP8266
+          - config: firmware/sonocotta-louder-esp32s3.factory.yaml
+            chip_family: ESP32-S3
+          - config: firmware/sendspin-eink-display.factory.yaml
+            chip_family: ESP32-S3
+            # Tab5 uses ESP32-P4 (experimental) - build locally
+            # - config: firmware/sendspin-tab5.factory.yaml
+            #   chip_family: ESP32-P4
 
     steps:
       - name: Checkout repository
@@ -75,23 +83,8 @@ jobs:
 
           DEVICE_NAME=$(basename $(dirname "${FIRMWARE_PATH}"))
 
-          # Factory files include base files - check the base file for platform
-          BASE_CONFIG="${{ matrix.config }}"
-          BASE_CONFIG="${BASE_CONFIG/.factory/}"
-
-          if grep -q "esp32s3-psram-platform.yaml" "${BASE_CONFIG}"; then
-            CHIP_FAMILY="ESP32-S3"
-          elif grep -q "esp32-platform.yaml" "${BASE_CONFIG}"; then
-            CHIP_FAMILY="ESP32"
-          elif grep -q "esp8266-platform.yaml" "${BASE_CONFIG}"; then
-            CHIP_FAMILY="ESP8266"
-          else
-            CHIP_FAMILY="ESP32"
-          fi
-
           echo "path=${FIRMWARE_PATH}" >> $GITHUB_OUTPUT
           echo "device_name=${DEVICE_NAME}" >> $GITHUB_OUTPUT
-          echo "chip_family=${CHIP_FAMILY}" >> $GITHUB_OUTPUT
 
       - name: Generate MD5 checksum
         id: md5
@@ -105,7 +98,7 @@ jobs:
       - name: Generate manifest.json
         run: |
           DEVICE_NAME="${{ steps.firmware.outputs.device_name }}"
-          CHIP_FAMILY="${{ steps.firmware.outputs.chip_family }}"
+          CHIP_FAMILY="${{ matrix.chip_family }}"
           MD5="${{ steps.md5.outputs.hash }}"
           VERSION="${{ github.event.release.tag_name || 'dev' }}"
           VERSION="${VERSION#v}"

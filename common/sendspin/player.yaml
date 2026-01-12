@@ -1,0 +1,25 @@
+# Sendspin Player Role - Audio output (speaker)
+#
+# "receives audio and plays it in sync" with volume and mute controls
+#
+# Provides:
+#   - sendspin_media_player media_player component
+#
+# Note: Device config should add on_play/on_pause/on_idle handlers
+# if display integration is needed. This keeps the role simple and
+# allows devices to customize behavior.
+#
+# Example device integration with display:
+#   media_player:
+#     - id: !extend sendspin_media_player
+#       on_play:
+#         - globals.set: { id: is_playing, value: "true" }
+#       on_pause:
+#         - globals.set: { id: is_playing, value: "false" }
+#         - script.execute: debounced_refresh
+
+# Media player for audio playback
+media_player:
+  - platform: sendspin
+    id: sendspin_media_player
+    name: Sendspin Player

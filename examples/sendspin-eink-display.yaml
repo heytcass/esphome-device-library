@@ -1,0 +1,37 @@
+# Sendspin E-Ink Display - Example Configuration
+# ESP32-S3 with 5.65" 7-color ACeP e-ink display
+#
+# Copy this file and customize for your device.
+#
+# First boot:
+# 1. Flash using ESPHome web installer or CLI
+# 2. Device creates WiFi AP: "sendspin-eink-display Fallback"
+# 3. Connect and configure WiFi
+
+substitutions:
+  device_name: sendspin-eink-livingroom  # Change this! Must be unique
+  friendly_name: "Living Room Sendspin"  # Change this! Shows in Home Assistant
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  min_version: 2025.12.2
+
+packages:
+  base:
+    url: https://github.com/heytcass/esphome-device-library
+    ref: main
+    files:
+      - common/base.yaml
+      - common/esp32-platform.yaml
+      - common/diagnostics.yaml
+      - common/sendspin/base.yaml
+      - common/sendspin/metadata.yaml
+      - common/sendspin/artwork.yaml
+      - common/sendspin/player.yaml
+      - devices/sendspin/eink-display.yaml
+    refresh: 1d
+
+wifi:
+  ap:
+    ssid: "${device_name} Fallback"

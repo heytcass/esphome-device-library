@@ -1,0 +1,25 @@
+# Sendspin Visualizer Role - Audio visualization (FFT)
+#
+# "visualizes music" by receiving audio analysis data
+#
+# Provides:
+#   - FFT data subscription from Sendspin
+#   - Visualization data for display rendering
+#
+# Note: This role is a placeholder for future FFT visualization support.
+# The Sendspin visualizer component provides real-time audio analysis
+# data (FFT bins) that can be used to create spectrum analyzers,
+# waveform displays, or other audio-reactive visualizations.
+#
+# Device configs should implement their own visualization lambdas
+# using the FFT data provided by this role.
+#
+# TODO: Add sendspin visualizer component when available
+# Example future usage:
+#   sendspin_visualizer:
+#     id: visualizer
+#     fft_bins: 32
+#     on_fft_data:
+#       - lambda: |-
+#           // x contains FFT bin data
+#           // Use for LED strips, display graphics, etc.

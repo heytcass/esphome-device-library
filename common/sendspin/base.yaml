@@ -1,0 +1,27 @@
+# Sendspin Base - Core components required by all roles
+#
+# This provides the foundation that all Sendspin devices need:
+# - External components (pinned commits)
+# - Sendspin hub connection
+#
+# Substitutions (optional):
+#   - task_stack_in_psram: "true" or "false" (default: false)
+
+# External components - pinned to specific commits
+external_components:
+  - source: github://pr#10212
+    components: [runtime_image, online_image]
+  - source:
+      type: git
+      url: https://github.com/esphome/esphome
+      ref: bff22983a390352360796f8e1363127e0cd1f898
+    components: [media_player]
+  - source:
+      type: git
+      url: https://github.com/esphome/esphome
+      ref: 71c8c6bdfc8006902eb0ea7b15bc86c575cef9be
+    components: [generic_image, mdns, sendspin]
+
+# Sendspin hub - connects to the Sendspin network
+sendspin:
+  id: sendspin_hub

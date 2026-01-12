@@ -1,0 +1,308 @@
+# M5Stack Tab5 with Sendspin - Hardware Configuration
+# Original config by @balloob (Paulus Schoutsen)
+# ESP32-P4 with hosted ESP32-C6 for WiFi, MIPI DSI display
+# Roles: metadata + artwork + player + controller (full featured)
+
+substitutions:
+  # HTTP OTA settings (ESP-IDF has TLS support)
+  verify_ssl: "true"
+  firmware_name: sendspin-tab5
+  # Sendspin role settings
+  cover_art_size: "720x720"
+  debounce_delay: "500ms"
+  display_id: tab5_display
+  # Font sizes for Tab5 LCD (larger than e-ink)
+  font_title_size: "32"
+  font_artist_size: "24"
+  font_subtitle_size: "32"
+  font_time_size: "128"
+  font_date_size: "40"
+
+# Board configuration - ESP32-P4
+esp32:
+  variant: esp32p4
+  flash_size: 16MB
+  framework:
+    type: esp-idf
+    advanced:
+      enable_idf_experimental_features: true
+
+esphome:
+  on_boot:
+    then:
+      rx8130.read_time:
+
+# Hosted ESP32-C6 for WiFi
+esp32_hosted:
+  variant: esp32c6
+  active_high: true
+  clk_pin: GPIO12
+  cmd_pin: GPIO13
+  d0_pin: GPIO11
+  d1_pin: GPIO10
+  d2_pin: GPIO9
+  d3_pin: GPIO8
+  reset_pin: GPIO15
+  slot: 1
+
+logger:
+  hardware_uart: USB_SERIAL_JTAG
+  level: DEBUG
+
+psram:
+  mode: hex
+  speed: 200MHz
+
+# Override base sendspin hub for PSRAM
+sendspin:
+  id: sendspin_hub
+  task_stack_in_psram: true
+
+# I2C bus for peripherals
+i2c:
+  - id: bsp_bus
+    sda: GPIO31
+    scl: GPIO32
+    frequency: 400kHz
+
+# IO Expanders
+pi4ioe5v6408:
+  - id: pi4ioe1
+    address: 0x43
+  - id: pi4ioe2
+    address: 0x44
+
+# Power management
+switch:
+  - platform: gpio
+    id: wifi_power
+    name: "WiFi Power"
+    pin:
+      pi4ioe5v6408: pi4ioe2
+      number: 0
+    restore_mode: ALWAYS_ON
+  - platform: gpio
+    id: usb_5v_power
+    name: "USB Power"
+    pin:
+      pi4ioe5v6408: pi4ioe2
+      number: 3
+  - platform: gpio
+    id: quick_charge
+    name: "Quick Charge"
+    pin:
+      pi4ioe5v6408: pi4ioe2
+      number: 5
+      inverted: true
+  - platform: gpio
+    id: charge_enable
+    name: "Charge Enable"
+    pin:
+      pi4ioe5v6408: pi4ioe2
+      number: 7
+    restore_mode: ALWAYS_ON
+  - platform: gpio
+    id: wifi_antenna_int_ext
+    pin:
+      pi4ioe5v6408: pi4ioe1
+      number: 0
+  - platform: gpio
+    id: speaker_enable
+    name: "Speaker Enable"
+    pin:
+      pi4ioe5v6408: pi4ioe1
+      number: 1
+    restore_mode: ALWAYS_ON
+  - platform: gpio
+    id: external_5v_power
+    name: "External 5V Power"
+    pin:
+      pi4ioe5v6408: pi4ioe1
+      number: 2
+
+binary_sensor:
+  - platform: gpio
+    id: headphone_detect
+    name: "Headphone Detect"
+    pin:
+      pi4ioe5v6408: pi4ioe1
+      number: 7
+
+select:
+  - platform: template
+    id: wifi_antenna_select
+    name: "WiFi Antenna"
+    options:
+      - "Internal"
+      - "External"
+    optimistic: true
+    on_value:
+      - if:
+          condition:
+            lambda: return i == 0;
+          then:
+            - switch.turn_off: wifi_antenna_int_ext
+          else:
+            - switch.turn_on: wifi_antenna_int_ext
+
+# Battery monitoring
+sensor:
+  - platform: ina226
+    address: 0x41
+    adc_averaging: 16
+    max_current: 8.192A
+    shunt_resistance: 0.005ohm
+    bus_voltage:
+      id: battery_voltage
+      name: "Battery Voltage"
+    current:
+      id: battery_current
+      name: "Battery Current"
+
+  - platform: template
+    name: "Battery Percentage"
+    lambda: |-
+      float voltage = id(battery_voltage).state;
+      float min_voltage = 6.0;
+      float max_voltage = 8.23;
+      float percentage = (voltage - min_voltage) / (max_voltage - min_voltage) * 100.0;
+      if (percentage > 100.0) return 100.0;
+      if (percentage < 0.0) return 0.0;
+      return percentage;
+    update_interval: 60s
+    unit_of_measurement: "%"
+    accuracy_decimals: 1
+
+# Touchscreen
+touchscreen:
+  - platform: gt911
+    interrupt_pin: GPIO23
+    update_interval: never
+    reset_pin:
+      pi4ioe5v6408: pi4ioe1
+      number: 5
+    calibration:
+      x_min: 0
+      x_max: 720
+      y_min: 0
+      y_max: 1280
+    id: touch
+
+# LDO control
+esp_ldo:
+  - voltage: 2.5V
+    channel: 3
+
+# Backlight
+output:
+  - platform: ledc
+    pin: GPIO22
+    id: backlight_pwm
+    frequency: 1000Hz
+
+light:
+  - platform: monochromatic
+    output: backlight_pwm
+    name: "Display Backlight"
+    id: backlight
+    restore_mode: RESTORE_DEFAULT_ON
+    default_transition_length: 250ms
+
+# Time - RTC + Home Assistant sync
+time:
+  - platform: rx8130
+    id: rtc_time
+    i2c_id: bsp_bus
+    update_interval: never
+    timezone: UTC
+  - platform: homeassistant
+    id: ha_time
+    on_time_sync:
+      then:
+        rx8130.write_time:
+
+# Media player state callbacks for display
+media_player:
+  - id: !extend sendspin_media_player
+    on_play:
+      - globals.set:
+          id: is_playing
+          value: "true"
+    on_pause:
+      - globals.set:
+          id: is_playing
+          value: "false"
+      - script.execute: debounced_refresh
+    on_idle:
+      - globals.set:
+          id: is_playing
+          value: "false"
+      - script.execute: debounced_refresh
+
+# Trigger refresh on track change
+text_sensor:
+  - id: !extend track_title
+    on_value:
+      - script.execute: debounced_refresh
+
+# LCD specific: faster clock refresh (1 min vs 15 min for e-ink)
+interval:
+  - interval: 1min
+    then:
+      - if:
+          condition:
+            lambda: "return !id(is_playing);"
+          then:
+            - component.update: tab5_display
+            - logger.log: "Clock updated (1min interval)"
+
+# MIPI DSI Display
+display:
+  - platform: mipi_dsi
+    id: tab5_display
+    dimensions:
+      height: 1280
+      width: 720
+    model: M5Stack-Tab5
+    reset_pin:
+      pi4ioe5v6408: pi4ioe1
+      number: 4
+    update_interval: never
+    lambda: |-
+      // Display: 720 wide x 1280 tall (portrait)
+
+      if (!id(is_playing)) {
+        // ============ IDLE SCREEN ============
+        it.filled_rectangle(0, 0, 720, 1280, id(my_black));
+        it.rectangle(30, 30, 660, 1220, id(my_white));
+        it.strftime(360, 500, id(font_time), id(my_white), TextAlign::CENTER, "%I:%M %p", id(ha_time).now());
+        it.strftime(360, 650, id(font_date), id(my_white), TextAlign::CENTER, "%A, %B %d", id(ha_time).now());
+        it.print(360, 1100, id(font_idle_subtitle), id(my_white), TextAlign::CENTER, "Sendspin");
+      } else {
+        // ============ NOW PLAYING SCREEN ============
+        it.filled_rectangle(0, 0, 720, 1280, id(my_black));
+        it.image(0, 100, id(sendspin_cover_art));
+        it.filled_rectangle(0, 850, 720, 430, id(my_black));
+
+        std::string title = id(track_title).state;
+        std::string artist = id(track_artist).state;
+        std::string album = id(album_name).state;
+
+        if (title.empty()) title = "Unknown Track";
+        if (title.length() > 35) title = title.substr(0, 32) + "...";
+
+        std::string subtitle;
+        if (!artist.empty() && !album.empty()) {
+          subtitle = artist + " - " + album;
+        } else if (!artist.empty()) {
+          subtitle = artist;
+        } else if (!album.empty()) {
+          subtitle = album;
+        }
+        if (subtitle.length() > 45) subtitle = subtitle.substr(0, 42) + "...";
+
+        it.print(360, 900, id(font_title), id(my_white), TextAlign::TOP_CENTER, title.c_str());
+        if (!subtitle.empty()) {
+          it.print(360, 950, id(font_artist), id(my_white), TextAlign::TOP_CENTER, subtitle.c_str());
+        }
+      }
