@@ -87,7 +87,7 @@ esphome-device-library/
 │   ├── esp32-platform.yaml     # ESP32 framework config
 │   ├── esp8266-platform.yaml   # ESP8266 framework config
 │   ├── diagnostics.yaml        # WiFi signal, uptime, debug sensors
-│   ├── http-ota.yaml           # HTTP firmware updates (factory only)
+│   ├── http-ota.yaml           # HTTP OTA updates + project metadata (factory only)
 │   └── secrets.yaml            # Include directive for ../secrets.yaml
 │
 ├── devices/                     # Hardware definitions (one per device model)
@@ -120,10 +120,9 @@ esphome-device-library/
 **Base configs** contain all device functionality (hardware, sensors, common packages) but NO productized features.
 
 **Factory configs** extend base with:
-- `http-ota.yaml` package for auto-updates
+- `http-ota.yaml` package (provides auto-updates + `esphome.project` metadata)
 - `dashboard_import` pointing to BASE config (not factory!)
 - `esp32_improv` or `improv_serial` for WiFi provisioning
-- `esphome.project` metadata for version tracking
 
 When users **adopt** a device, Dashboard imports the BASE config - giving them full functionality without HTTP OTA. This prevents conflicts between local management and central updates.
 
@@ -134,7 +133,7 @@ When users **adopt** a device, Dashboard imports the BASE config - giving them f
 | 1 | `common/base.yaml` | WiFi, API, OTA, logger, time, mDNS - universal services |
 | 2 | `common/esp*-platform.yaml` | Platform framework config (ESP32/ESP8266) |
 | 3 | `common/diagnostics.yaml` | WiFi signal, uptime, debug sensors |
-| 4 | `common/http-ota.yaml` | HTTP OTA updates (factory configs only) |
+| 4 | `common/http-ota.yaml` | HTTP OTA updates + esphome.project metadata (factory only) |
 | 5 | `devices/*/[device].yaml` | Hardware-specific GPIO mappings only |
 
 ---
@@ -219,10 +218,9 @@ Devices use the [Improv WiFi](https://www.improv-wifi.com/) standard for first-t
 
 3. **Create factory config**: `firmware/brand-model.factory.yaml`
    - Import base config as package
-   - Import http-ota.yaml
+   - Import http-ota.yaml (provides HTTP OTA + esphome.project metadata)
    - Add `dashboard_import` pointing to BASE config
    - Add `esp32_improv` (ESP32) or `improv_serial` (ESP8266)
-   - Add `esphome.project` metadata
 
 4. **Create example**: `examples/brand-model.yaml`
 

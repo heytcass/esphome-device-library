@@ -14,13 +14,12 @@
 #   hardware: !include ../../devices/brand/model.yaml  # Sets firmware_name
 #   ...
 
-# Project info for version tracking
-# Dashboard builds get "0.0.0", GitHub Action builds get the release tag
-# Using 0.0.0 ensures any release version (1.0.0, 2.0.0, etc.) is considered newer
+# Project info for firmware version tracking
+# Dashboard builds get "dev", GitHub Action builds get the release tag
 esphome:
   project:
     name: "heytcass.esphome-device-library"
-    version: !env_var FIRMWARE_VERSION 0.0.0
+    version: !env_var FIRMWARE_VERSION dev
 
 # Required component for HTTP requests
 # verify_ssl defaults to true (ESP32 ESP-IDF); ESP8266 devices should set to false
