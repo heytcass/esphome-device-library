@@ -1,13 +1,13 @@
 {
-  "name": "louder-esp32s3",
+  "name": "sendspin-eink-display",
   "version": "2.2.0",
   "home_assistant_domain": "esphome",
   "builds": [
     {
       "chipFamily": "ESP32-S3",
       "ota": {
-        "path": "louder-esp32s3.bin",
-        "md5": "cd4dbb37ec67235a247337be01873e3b"
+        "path": "sendspin-eink-display.bin",
+        "md5": "2e4ab2de9ba6397fb12cb3f36ecfc2ec"
       }
     }
   ]

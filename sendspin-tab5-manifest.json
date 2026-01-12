@@ -1,0 +1,14 @@
+{
+  "name": "sendspin-tab5",
+  "version": "2.2.0",
+  "home_assistant_domain": "esphome",
+  "builds": [
+    {
+      "chipFamily": "ESP32-P4",
+      "ota": {
+        "path": "sendspin-tab5.bin",
+        "md5": "fa7444a08bebff839d62eb2b1507d672"
+      }
+    }
+  ]
+}
