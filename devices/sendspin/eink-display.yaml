@@ -3,8 +3,6 @@
 # Roles: metadata + artwork (display-only, no audio)
 
 substitutions:
-  # HTTP OTA settings (ESP-IDF has TLS support)
-  verify_ssl: "true"
   firmware_name: sendspin-eink-display
   # Sendspin role settings
   cover_art_size: "600x600"

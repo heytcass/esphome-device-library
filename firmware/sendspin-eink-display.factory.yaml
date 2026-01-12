@@ -6,11 +6,6 @@ packages:
   device: !include sendspin-eink-display.yaml
   http_ota: !include ../common/http-ota.yaml
 
-esphome:
-  project:
-    name: "heytcass.esphome-device-library"
-    version: !env_var FIRMWARE_VERSION dev
-
 # Enable adoption in ESPHome Dashboard
 # Points to BASE config so adopted devices get clean config without HTTP OTA
 dashboard_import:

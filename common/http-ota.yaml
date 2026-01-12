@@ -14,7 +14,7 @@
 #   hardware: !include ../../devices/brand/model.yaml  # Sets firmware_name
 #   ...
 
-# Project info for version tracking
+# Project info for firmware version tracking
 # Dashboard builds get "0.0.0", GitHub Action builds get the release tag
 # Using 0.0.0 ensures any release version (1.0.0, 2.0.0, etc.) is considered newer
 esphome:
