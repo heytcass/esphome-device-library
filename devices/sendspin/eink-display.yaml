@@ -76,8 +76,10 @@ time:
                 - logger.log: "Clock updated (on the 10s)"
 
 # Media player state callbacks (display-only device still needs these)
+# Internal: hide from HA since this device has no audio output
 media_player:
   - id: !extend sendspin_media_player
+    internal: true
     on_play:
       - globals.set:
           id: is_playing
@@ -98,6 +100,57 @@ text_sensor:
   - id: !extend track_title
     on_value:
       - script.execute: debounced_refresh
+
+# Physical buttons (directly on Inky Impression)
+# Wiring: Connect button pins to these GPIOs + common ground
+#   Button A (Pi GPIO 5)  → ESP32 GPIO4
+#   Button B (Pi GPIO 6)  → ESP32 GPIO5
+#   Button C (Pi GPIO 16) → ESP32 GPIO6
+#   Button D (Pi GPIO 24) → ESP32 GPIO13
+binary_sensor:
+  - platform: gpio
+    id: button_a
+    name: "Play/Pause"
+    icon: "mdi:play-pause"
+    pin:
+      number: GPIO4
+      mode: INPUT_PULLUP
+      inverted: true
+    on_press:
+      - media_player.toggle: sendspin_media_player
+
+  - platform: gpio
+    id: button_b
+    name: "Previous Track"
+    icon: "mdi:skip-previous"
+    pin:
+      number: GPIO5
+      mode: INPUT_PULLUP
+      inverted: true
+    on_press:
+      - media_player.previous: sendspin_media_player
+
+  - platform: gpio
+    id: button_c
+    name: "Next Track"
+    icon: "mdi:skip-next"
+    pin:
+      number: GPIO6
+      mode: INPUT_PULLUP
+      inverted: true
+    on_press:
+      - media_player.next: sendspin_media_player
+
+  - platform: gpio
+    id: button_d
+    name: "Stop"
+    icon: "mdi:stop"
+    pin:
+      number: GPIO13
+      mode: INPUT_PULLUP
+      inverted: true
+    on_press:
+      - media_player.stop: sendspin_media_player
 
 # SPI bus for e-ink display
 spi:
