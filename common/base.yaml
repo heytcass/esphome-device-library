@@ -34,7 +34,7 @@ mdns:
 wifi:
   min_auth_mode: WPA2  # Reject weaker security (ESPHome 2025.11.0+)
   ap:
-    ssid: "${friendly_name} Setup"
+    ssid: "${device_name} Fallback"
     password: "esphome123"
 
 time:

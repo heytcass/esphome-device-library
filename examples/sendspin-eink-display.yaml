@@ -23,6 +23,7 @@ packages:
     ref: main
     files:
       - common/base.yaml
+      - common/http-ota.yaml
       - common/esp32-platform.yaml
       - common/diagnostics.yaml
       - common/sendspin/base.yaml

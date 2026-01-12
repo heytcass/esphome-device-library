@@ -19,4 +19,4 @@ packages:
 
 wifi:
   ap:
-    ssid: "${friendly_name} Fallback"
+    ssid: "${device_name} Fallback"

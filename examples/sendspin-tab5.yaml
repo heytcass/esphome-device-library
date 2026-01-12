@@ -24,6 +24,7 @@ packages:
     ref: main
     files:
       - common/base.yaml
+      - common/http-ota.yaml
       - common/diagnostics.yaml
       - common/sendspin/base.yaml
       - common/sendspin/metadata.yaml

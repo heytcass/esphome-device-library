@@ -343,7 +343,4 @@ binary_sensor:
       name: "Over Temperature Warning"
       id: over_temperature_warning
 
-button:
-  - platform: restart
-    name: "Restart"
-    id: restart_btn
+# Restart button provided by common/diagnostics.yaml

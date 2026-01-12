@@ -8,7 +8,7 @@
 # These may change or break with updates. Use at your own risk.
 #
 # First boot:
-# 1. Device creates WiFi AP: "<friendly_name> Setup"
+# 1. Device creates WiFi AP: "<device_name> Fallback"
 # 2. Connect to AP with password: esphome123
 # 3. Open http://192.168.4.1 in browser
 # 4. Enter your WiFi credentials
@@ -50,4 +50,4 @@ packages:
 
 wifi:
   ap:
-    ssid: "${friendly_name} Fallback"
+    ssid: "${device_name} Fallback"

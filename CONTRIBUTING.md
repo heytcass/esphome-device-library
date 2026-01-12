@@ -34,9 +34,6 @@ substitutions:
 esp32:
   board: esp32dev
 
-# USB/Serial provisioning (required)
-improv_serial:
-
 # GPIO mappings - the hardware-specific part
 switch:
   - platform: gpio
@@ -63,14 +60,15 @@ status_led:
 
 **Key requirements:**
 - Set `firmware_name` substitution (used by HTTP OTA)
-- Use `improv_serial:` for USB provisioning
 - Use substitutions for calibration values
 - Only include hardware-specific GPIO mappings
+- Do NOT include `improv_serial:` here (that goes in factory configs only)
 
-### Step 2: Create the Firmware Build Config
+### Step 2: Create Firmware Build Configs (Base + Factory)
 
-Create `firmware/<brand>-<model>.yaml` that combines all packages:
+Create TWO configs: a base config for adopted devices, and a factory config for pre-built firmware.
 
+**Base config** - `firmware/<brand>-<model>.yaml`:
 ```yaml
 # firmware/acme-smart-plug.yaml
 
@@ -88,14 +86,33 @@ esphome:
 
 packages:
   base: !include ../common/base.yaml
-  http_ota: !include ../common/http-ota.yaml
   platform: !include ../common/esp32-platform.yaml  # or esp8266-platform.yaml
   diagnostics: !include ../common/diagnostics.yaml
   hardware: !include ../devices/acme/smart-plug.yaml
 ```
 
+**Factory config** - `firmware/<brand>-<model>.factory.yaml`:
+```yaml
+# firmware/acme-smart-plug.factory.yaml
+# Extends base with HTTP OTA, Improv, and dashboard adoption
+
+packages:
+  device: !include acme-smart-plug.yaml
+  http_ota: !include ../common/http-ota.yaml
+
+dashboard_import:
+  package_import_url: github://heytcass/esphome-device-library/firmware/acme-smart-plug.yaml@main
+  import_full_config: false
+
+improv_serial:
+
+esp32_improv:
+  authorizer: none
+```
+
 **Key requirements:**
-- Include `http-ota.yaml` (mandatory!)
+- Base config: NO `http-ota.yaml` (for adopted devices)
+- Factory config: Extends base + adds HTTP OTA, Improv, dashboard_import
 - Use `name_add_mac_suffix: true` for release builds
 - Set project version to `!env_var FIRMWARE_VERSION dev`
 
@@ -137,7 +154,7 @@ packages:
 
 wifi:
   ap:
-    ssid: "${friendly_name} Fallback"
+    ssid: "${device_name} Fallback"
 ```
 
 ### Step 4: Update CI Workflows
@@ -177,7 +194,7 @@ strategy:
 
 Devices use captive portal for WiFi setup (no credentials compiled in):
 
-1. **First boot**: Device creates AP named `<friendly_name> Setup`
+1. **First boot**: Device creates AP named `<device_name> Fallback`
 2. **Connect**: Join the AP with password `esphome123`
 3. **Configure**: Browser opens automatically (or go to http://192.168.4.1)
 4. **Enter credentials**: Submit your WiFi SSID and password

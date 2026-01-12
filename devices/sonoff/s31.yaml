@@ -8,9 +8,6 @@ substitutions:
 esp8266:
   board: esp01_1m
 
-# USB/Serial provisioning
-improv_serial:
-
 # UART for CSE7766 power monitoring
 uart:
   rx_pin: RX

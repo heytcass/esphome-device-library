@@ -4,9 +4,6 @@
 esp32:
   board: esp32dev  # Wyze uses original ESP32
 
-# Modern WiFi provisioning via USB serial (ESPHome 2024+)
-improv_serial:
-
 substitutions:
   # Firmware binary name for HTTP OTA updates
   firmware_name: "wyze-outdoor-plug"

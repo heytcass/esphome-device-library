@@ -49,7 +49,7 @@ packages:
 
 wifi:
   ap:
-    ssid: "${friendly_name} Fallback"
+    ssid: "${device_name} Fallback"
 ```
 
 ### 3. Install
@@ -60,7 +60,7 @@ Click **Install** and choose your method (USB for first flash, then OTA works au
 
 After flashing, the device needs WiFi credentials:
 
-1. **Connect to device AP**: Look for WiFi network `<friendly_name> Setup`
+1. **Connect to device AP**: Look for WiFi network `<device_name> Fallback`
 2. **Password**: `esphome123`
 3. **Configure**: Browser opens automatically (or go to http://192.168.4.1)
 4. **Enter your WiFi**: Submit your network SSID and password
