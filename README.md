@@ -16,7 +16,7 @@ Unlike static config collections that rot over time, devices using this library 
 | [Sonoff S31](devices/sonoff/s31.yaml) | ESP8266 | Smart plug with power monitoring |
 | [Sonocotta Louder ESP32-S3](devices/sonocotta/louder-esp32s3.yaml) | ESP32-S3 | TAS5805M DAC media player, Spotify Connect, 15-band EQ |
 | [Sendspin Tab5](devices/sendspin/tab5.yaml) | ESP32-P4 | M5Stack Tab5 with MIPI DSI display, Sendspin media player |
-| [Sendspin E-Ink Display](devices/sendspin/eink-display.yaml) | ESP32-S3 | 5.65" 7-color ACeP e-ink, album art + clock display |
+| [Sendspin E-Ink Display](devices/sendspin/eink-display.yaml) | ESP32-S3 | 5.65" 7-color ACeP e-ink, album art + clock, physical playback buttons |
 
 ## Quick Start (ESPHome Dashboard)
 
