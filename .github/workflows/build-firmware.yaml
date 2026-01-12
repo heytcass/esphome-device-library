@@ -36,9 +36,8 @@ jobs:
             chip_family: ESP32-S3
           - config: firmware/sendspin-eink-display.factory.yaml
             chip_family: ESP32-S3
-            # Tab5 uses ESP32-P4 (experimental) - build locally
-            # - config: firmware/sendspin-tab5.factory.yaml
-            #   chip_family: ESP32-P4
+          - config: firmware/sendspin-tab5.factory.yaml
+            chip_family: ESP32-P4
 
     steps:
       - name: Checkout repository

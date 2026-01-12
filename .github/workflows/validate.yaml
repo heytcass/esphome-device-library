@@ -16,8 +16,7 @@ jobs:
           - examples/sonoff-s31.yaml
           - examples/sonocotta-louder-esp32s3.yaml
           - examples/sendspin-eink-display.yaml
-          # Tab5 uses ESP32-P4 (experimental) - validate locally
-          # - examples/sendspin-tab5.yaml
+          - examples/sendspin-tab5.yaml
 
     steps:
       - name: Checkout repository
