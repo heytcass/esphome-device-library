@@ -1,13 +1,13 @@
 {
   "name": "sendspin-eink-display",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "home_assistant_domain": "esphome",
   "builds": [
     {
       "chipFamily": "ESP32-S3",
       "ota": {
         "path": "sendspin-eink-display.bin",
-        "md5": "2e4ab2de9ba6397fb12cb3f36ecfc2ec"
+        "md5": "19c68b70105b604ca79b98f22e2be9b6"
       }
     }
   ]
