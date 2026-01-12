@@ -1,5 +1,6 @@
-# Sonoff S31 - Firmware Build Configuration
-# This file is used by GitHub Actions to build release firmware
+# Sonoff S31 - Base Configuration
+# This is the adoptable config - users import this when adopting in ESPHome Dashboard
+# For pre-built firmware with auto-updates, see sonoff-s31.factory.yaml
 
 substitutions:
   device_name: sonoff-s31
@@ -9,19 +10,9 @@ esphome:
   name: ${device_name}
   friendly_name: ${friendly_name}
   name_add_mac_suffix: true
-  project:
-    name: "heytcass.esphome-device-library"
-    version: !env_var FIRMWARE_VERSION dev
-
-# Enable adoption in ESPHome Dashboard
-# When adopted, Dashboard generates unique API encryption key per device
-dashboard_import:
-  package_import_url: github://heytcass/esphome-device-library/firmware/sonoff-s31.yaml@main
-  import_full_config: false
 
 packages:
   base: !include ../common/base.yaml
-  http_ota: !include ../common/http-ota.yaml
   platform: !include ../common/esp8266-platform.yaml
   diagnostics: !include ../common/diagnostics.yaml
   hardware: !include ../devices/sonoff/s31.yaml

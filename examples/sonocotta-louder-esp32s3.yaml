@@ -1,0 +1,53 @@
+# examples/sonocotta-louder-esp32s3.yaml
+# Sonocotta Louder ESP32-S3 - Example Configuration
+# TAS5805M DAC-based audio media player with Sendspin (Spotify Connect)
+#
+# Copy this file and customize for your device
+#
+# EXPERIMENTAL: This device requires external components from unmerged ESPHome PRs.
+# These may change or break with updates. Use at your own risk.
+#
+# First boot:
+# 1. Device creates WiFi AP: "<friendly_name> Setup"
+# 2. Connect to AP with password: esphome123
+# 3. Open http://192.168.4.1 in browser
+# 4. Enter your WiFi credentials
+# 5. Device reboots and connects to your network
+#
+# Features:
+# - Media player with Home Assistant integration
+# - Sendspin (Spotify Connect) support
+# - 15-band equalizer
+# - Announcement ducking (auto-lowers music for TTS)
+
+substitutions:
+  device_name: louder-living-room     # Change this! Must be unique
+  friendly_name: "Living Room Speaker" # Change this! Shows in Home Assistant
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  min_version: 2025.7.0
+  # Play boot sound to capture DAC clock signal
+  on_boot:
+    priority: 220.0
+    then:
+      media_player.play_media:
+        id: external_media_player
+        media_url: file://startup_sync_sound
+
+packages:
+  base:
+    url: https://github.com/heytcass/esphome-device-library
+    ref: main
+    files:
+      - common/base.yaml
+      - common/http-ota.yaml
+      - common/esp32s3-psram-platform.yaml
+      - common/diagnostics.yaml
+      - devices/sonocotta/louder-esp32s3.yaml
+    refresh: 1d
+
+wifi:
+  ap:
+    ssid: "${friendly_name} Fallback"

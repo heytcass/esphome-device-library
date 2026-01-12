@@ -11,8 +11,9 @@ jobs:
     strategy:
       matrix:
         config:
-          - firmware/wyze-outdoor-plug.yaml
-          - firmware/sonoff-s31.yaml
+          - firmware/wyze-outdoor-plug.factory.yaml
+          - firmware/sonoff-s31.factory.yaml
+          - firmware/sonocotta-louder-esp32s3.factory.yaml
 
     steps:
       - name: Checkout repository
@@ -57,9 +58,15 @@ jobs:
 
           DEVICE_NAME=$(basename $(dirname "${FIRMWARE_PATH}"))
 
-          if grep -q "esp32-platform.yaml" "${{ matrix.config }}"; then
+          # Factory files include base files - check the base file for platform
+          BASE_CONFIG="${{ matrix.config }}"
+          BASE_CONFIG="${BASE_CONFIG/.factory/}"
+
+          if grep -q "esp32s3-psram-platform.yaml" "${BASE_CONFIG}"; then
+            CHIP_FAMILY="ESP32-S3"
+          elif grep -q "esp32-platform.yaml" "${BASE_CONFIG}"; then
             CHIP_FAMILY="ESP32"
-          elif grep -q "esp8266-platform.yaml" "${{ matrix.config }}"; then
+          elif grep -q "esp8266-platform.yaml" "${BASE_CONFIG}"; then
             CHIP_FAMILY="ESP8266"
           else
             CHIP_FAMILY="ESP32"

@@ -78,6 +78,8 @@ Open for community contributions of additional devices:
 
 ## Architecture
 
+This project follows the [Home Assistant Voice PE pattern](https://github.com/esphome/home-assistant-voice-pe) with separate base and factory configs.
+
 ```
 esphome-device-library/
 ├── common/                      # Reusable packages (everyone uses these)
@@ -85,27 +87,45 @@ esphome-device-library/
 │   ├── esp32-platform.yaml     # ESP32 framework config
 │   ├── esp8266-platform.yaml   # ESP8266 framework config
 │   ├── diagnostics.yaml        # WiFi signal, uptime, debug sensors
-│   ├── http-ota.yaml           # HTTP firmware updates (REQUIRED)
+│   ├── http-ota.yaml           # HTTP firmware updates (factory only)
 │   └── secrets.yaml            # Include directive for ../secrets.yaml
 │
 ├── devices/                     # Hardware definitions (one per device model)
 │   └── wyze/
 │       └── outdoor-plug.yaml   # GPIO pins, power monitoring, buttons, LEDs
 │
-├── firmware/                    # Build configurations (one per device)
-│   └── wyze-outdoor-plug.yaml  # Combines packages for firmware build
+├── firmware/                    # Build configurations (base + factory pattern)
+│   ├── wyze-outdoor-plug.yaml          # Base config (adoptable)
+│   └── wyze-outdoor-plug.factory.yaml  # Factory config (productized)
 │
 ├── examples/                    # User-facing examples
 │   └── wyze-outdoor-plug.yaml  # Template users copy and customize
 │
 ├── .github/workflows/
 │   ├── validate.yaml           # CI: validates all configs
-│   └── build-firmware.yaml     # Release: builds firmware, deploys to GitHub Pages
+│   └── build-firmware.yaml     # Release: builds *.factory.yaml, deploys to GitHub Pages
 │
 ├── secrets.yaml.example        # Template for user secrets
 ├── PROJECT.md                  # THIS DOCUMENT - vision and standards
 └── README.md                   # User-facing quick start
 ```
+
+### Base vs Factory Pattern
+
+| Config Type | Purpose | HTTP OTA | dashboard_import | Built by CI |
+|-------------|---------|----------|------------------|-------------|
+| **Base** (`device.yaml`) | Adoptable config | ❌ No | ❌ No | ❌ No |
+| **Factory** (`device.factory.yaml`) | Productized firmware | ✅ Yes | ✅ Yes (points to base) | ✅ Yes |
+
+**Base configs** contain all device functionality (hardware, sensors, common packages) but NO productized features.
+
+**Factory configs** extend base with:
+- `http-ota.yaml` package for auto-updates
+- `dashboard_import` pointing to BASE config (not factory!)
+- `esp32_improv` or `improv_serial` for WiFi provisioning
+- `esphome.project` metadata for version tracking
+
+When users **adopt** a device, Dashboard imports the BASE config - giving them full functionality without HTTP OTA. This prevents conflicts between local management and central updates.
 
 ### Package Layers
 
@@ -114,7 +134,7 @@ esphome-device-library/
 | 1 | `common/base.yaml` | WiFi, API, OTA, logger, time, mDNS - universal services |
 | 2 | `common/esp*-platform.yaml` | Platform framework config (ESP32/ESP8266) |
 | 3 | `common/diagnostics.yaml` | WiFi signal, uptime, debug sensors |
-| 4 | `common/http-ota.yaml` | HTTP OTA updates (REQUIRED for all devices) |
+| 4 | `common/http-ota.yaml` | HTTP OTA updates (factory configs only) |
 | 5 | `devices/*/[device].yaml` | Hardware-specific GPIO mappings only |
 
 ---
@@ -142,31 +162,44 @@ esphome-device-library/
 
 Devices use the [Improv WiFi](https://www.improv-wifi.com/) standard for first-time setup:
 
+### Productized Flow (Auto-Updates)
 ```
-1. User flashes firmware via ESPHome Dashboard or web installer
-2. improv_serial prompts for WiFi credentials (in browser)
+1. User flashes factory firmware via web installer or USB
+2. Improv prompts for WiFi credentials
+3. Device connects to network and starts checking for HTTP OTA updates
+4. User does NOT adopt in Dashboard - device just works
+5. Device receives automatic updates when community improves configs
+```
+
+### Adoption Flow (Full Control)
+```
+1. User flashes factory firmware via web installer or USB
+2. Improv prompts for WiFi credentials
 3. Device connects to network
 4. ESPHome Dashboard discovers device (via mDNS + project info)
 5. User clicks "Adopt" in Dashboard
-6. Dashboard generates local config with:
-   - Package imports from this GitHub repo
+6. Dashboard imports BASE config (not factory!) with:
+   - All device functionality (no HTTP OTA)
    - UNIQUE API encryption key (per device!)
    - Customized device name
+7. User manages device locally - no central auto-updates
 ```
 
 ### Key Components
 
-| Component | Purpose | Platform |
-|-----------|---------|----------|
-| `improv_serial` | USB/Serial WiFi provisioning | All |
-| `esp32_improv` | BLE WiFi provisioning | ESP32 only |
-| `captive_portal` | Fallback AP with web config | All |
-| `dashboard_import` | Enables Dashboard adoption | All |
+| Component | Purpose | In Base | In Factory |
+|-----------|---------|---------|------------|
+| `captive_portal` | Fallback AP with web config | ✅ | ✅ |
+| `improv_serial` | USB/Serial WiFi provisioning | ❌ | ✅ |
+| `esp32_improv` | BLE WiFi provisioning (ESP32) | ❌ | ✅ |
+| `dashboard_import` | Enables Dashboard adoption | ❌ | ✅ |
+| `http-ota.yaml` | HTTP OTA from GitHub | ❌ | ✅ |
 
 ### Security Model
 
 - **No credentials compiled into firmware** - WiFi provisioned at runtime via Improv
-- **No shared API encryption keys** - Each device gets unique key during adoption
+- **Adopted devices get unique API keys** - Generated by Dashboard during adoption
+- **Productized devices have no encryption** - Trade-off for central auto-updates
 - **Credentials stored in NVS** - Persist across OTA updates
 
 ---
@@ -174,39 +207,46 @@ Devices use the [Improv WiFi](https://www.improv-wifi.com/) standard for first-t
 ## Adding New Devices (Phase 2+)
 
 1. **Create hardware file**: `devices/brand/model.yaml`
-   - Board type and `improv_serial`
+   - Board type
    - GPIO mappings
    - Hardware-specific sensors
    - Set `firmware_name` substitution
 
-2. **Create firmware build**: `firmware/brand-model.yaml`
-   - Import all common packages (http-ota.yaml is REQUIRED)
+2. **Create base config**: `firmware/brand-model.yaml`
+   - Import common packages (base, platform, diagnostics)
    - Import hardware file
-   - Add `dashboard_import` pointing to this file
-   - Add `esp32_improv` for ESP32 devices (BLE provisioning)
+   - NO http-ota, NO dashboard_import, NO improv
 
-3. **Create example**: `examples/brand-model.yaml`
+3. **Create factory config**: `firmware/brand-model.factory.yaml`
+   - Import base config as package
+   - Import http-ota.yaml
+   - Add `dashboard_import` pointing to BASE config
+   - Add `esp32_improv` (ESP32) or `improv_serial` (ESP8266)
+   - Add `esphome.project` metadata
 
-4. **Update CI**: Add to validate.yaml and build-firmware.yaml matrices
+4. **Create example**: `examples/brand-model.yaml`
 
-5. **Test on real hardware**: Validate, compile, flash, verify HTTP OTA works
+5. **Update CI**: Add factory config to build-firmware.yaml matrix
+
+6. **Test on real hardware**: Validate, compile, flash, verify HTTP OTA works
 
 ---
 
 ## Quality Standards
 
 ### Every Device MUST:
-- Include http-ota.yaml (non-negotiable)
-- Have a firmware/ build config
+- Have a base config (`firmware/device.yaml`) - adoptable, no HTTP OTA
+- Have a factory config (`firmware/device.factory.yaml`) - extends base with HTTP OTA
 - Have an examples/ template
-- Be in CI validation and build matrices
+- Factory config must be in build-firmware.yaml matrix
 - Be tested on real hardware
 
 ### Code MUST:
 - Follow DRY - no duplication between device files
 - Use substitutions for calibration values
-- Include improv_serial for easy WiFi setup
+- Factory configs must include improv for WiFi setup
 - Set firmware_name matching the manifest filename
+- dashboard_import must point to BASE config (not factory!)
 
 ---
 

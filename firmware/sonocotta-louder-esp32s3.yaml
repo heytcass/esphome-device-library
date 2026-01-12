@@ -1,0 +1,36 @@
+# Sonocotta Louder ESP32-S3 - Base Configuration
+# TAS5805M DAC-based audio media player with Sendspin (Spotify Connect)
+#
+# EXPERIMENTAL: This device requires external components from unmerged PRs.
+# These may change or break. Use at your own risk.
+#
+# This is the adoptable config - users import this when adopting in ESPHome Dashboard
+# For pre-built firmware with auto-updates, see sonocotta-louder-esp32s3.factory.yaml
+
+substitutions:
+  device_name: louder-esp32s3
+  friendly_name: "Louder ESP32-S3"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  min_version: 2025.7.0
+  name_add_mac_suffix: true
+  # Play boot sound to capture DAC clock signal and enable DSP configuration
+  # DSP configs (EQ, Mixer) are ignored before clock signal is established
+  on_boot:
+    priority: 220.0
+    then:
+      media_player.play_media:
+        id: external_media_player
+        media_url: file://startup_sync_sound
+
+packages:
+  base: !include ../common/base.yaml
+  platform: !include ../common/esp32s3-psram-platform.yaml
+  diagnostics: !include ../common/diagnostics.yaml
+  hardware: !include ../devices/sonocotta/louder-esp32s3.yaml
+
+wifi:
+  ap:
+    ssid: "${friendly_name} Fallback"

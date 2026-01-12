@@ -75,44 +75,44 @@ After initial setup, the device checks for updates every 6 hours.
 3. Your device checks for updates and shows "Update Available" in Home Assistant
 4. Click "Install" to update - no cables needed
 
-## Important: Don't Adopt in ESPHome Dashboard
+## Two Usage Models
 
-This project follows a **"productized" model** - firmware is pre-built and auto-updates centrally. This is different from typical ESPHome usage where you manage configs locally.
+This project supports both **productized** (auto-updating) and **adoptable** (customizable) workflows using the same firmware.
 
-**If you "Adopt" a device in ESPHome Dashboard, you will break automatic updates.**
+| Model | Auto-Updates | Customizable | Best For |
+|-------|--------------|--------------|----------|
+| **Productized** | ✅ Yes | ❌ No | Set-and-forget devices |
+| **Adopted** | ❌ No | ✅ Yes | Power users who want control |
 
-Here's why: When you adopt a device, Dashboard generates a unique API encryption key and takes over management. But HTTP OTA updates flash the pre-built firmware from GitHub, which doesn't have your unique key - your device becomes unreachable.
+### Productized (Auto-Updates)
 
-### Two Usage Models
+1. Flash the pre-built firmware from [GitHub Releases](https://github.com/heytcass/esphome-device-library/releases)
+2. Use captive portal or Improv for WiFi setup
+3. Don't adopt in ESPHome Dashboard
+4. Device receives automatic updates when community improves configs
 
-| Model | Auto-Updates | API Encryption | Local Control |
-|-------|--------------|----------------|---------------|
-| **Productized** (this project) | ✅ Yes | ❌ No | ❌ No |
-| **DIY** (traditional ESPHome) | ❌ No | ✅ Yes | ✅ Yes |
-
-### For Auto-Updates (Recommended)
+### Adopted (Full Control)
 
 1. Flash the pre-built firmware
-2. Use captive portal or Improv for WiFi setup
-3. **Do NOT adopt** in ESPHome Dashboard
-4. Device appears in Home Assistant automatically
-5. Receive automatic updates when community improves configs
+2. **Adopt** the device in ESPHome Dashboard
+3. Dashboard imports the base config (without HTTP OTA)
+4. Customize freely - you manage updates locally
 
-### For Full Local Control
-
-If you need API encryption or want to customize configs:
-1. Copy an [example file](examples/) to your local ESPHome
-2. Modify as needed
-3. Manage updates yourself (no automatic OTA from this repo)
+This follows the [Home Assistant Voice PE pattern](https://github.com/esphome/home-assistant-voice-pe) where factory firmware includes auto-updates, but adopted devices get a clean base config.
 
 ## Project Structure
 
 ```
 common/           # Shared packages (WiFi, OTA, diagnostics)
 devices/          # Hardware-specific GPIO configs
-firmware/         # Build configs for releases
+firmware/
+  ├── device.yaml          # Base config (adoptable, no HTTP OTA)
+  └── device.factory.yaml  # Factory config (extends base + HTTP OTA + improv)
 examples/         # Templates to copy and customize
 ```
+
+**Base configs** (`device.yaml`) contain all device functionality and are what users get when adopting.
+**Factory configs** (`device.factory.yaml`) extend base with productized features (HTTP OTA, Improv, dashboard_import).
 
 ## Contributing
 

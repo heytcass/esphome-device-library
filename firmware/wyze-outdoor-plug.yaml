@@ -1,5 +1,6 @@
-# Firmware build config for Wyze Outdoor Plug
-# Users flash this, then adopt via ESPHome dashboard with their own name
+# Wyze Outdoor Plug - Base Configuration
+# This is the adoptable config - users import this when adopting in ESPHome Dashboard
+# For pre-built firmware with auto-updates, see wyze-outdoor-plug.factory.yaml
 
 substitutions:
   device_name: wyze-outdoor-plug
@@ -8,27 +9,13 @@ substitutions:
 esphome:
   name: ${device_name}
   friendly_name: ${friendly_name}
-  name_add_mac_suffix: true  # Ensures unique names when multiple devices use same firmware
-  project:
-    name: "heytcass.esphome-device-library"
-    version: !env_var FIRMWARE_VERSION dev
-
-# Enable adoption in ESPHome Dashboard
-# When adopted, Dashboard generates unique API encryption key per device
-dashboard_import:
-  package_import_url: github://heytcass/esphome-device-library/firmware/wyze-outdoor-plug.yaml@main
-  import_full_config: false
+  name_add_mac_suffix: true
 
 packages:
   base: !include ../common/base.yaml
-  http_ota: !include ../common/http-ota.yaml
   platform: !include ../common/esp32-platform.yaml
   diagnostics: !include ../common/diagnostics.yaml
   hardware: !include ../devices/wyze/outdoor-plug.yaml
-
-# BLE provisioning for ESP32 (no button required)
-esp32_improv:
-  authorizer: none
 
 wifi:
   ap:

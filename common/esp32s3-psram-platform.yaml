@@ -1,0 +1,37 @@
+# ESP32-S3 platform configuration with PSRAM optimizations
+# For devices with octal PSRAM (like Louder-ESP32-S3, Voice-PE, etc.)
+#
+# This extends the base esp32-platform.yaml with S3-specific optimizations.
+# Use this for ESP32-S3 boards with PSRAM that need high-performance audio/media.
+
+substitutions:
+  verify_ssl: "true"
+  # Set to "true" for ESP32-S3, "false" for non-S3 variants
+  task_stack_in_psram: "true"
+
+esp32:
+  variant: ESP32S3
+  flash_size: 16MB
+  cpu_frequency: 240MHz
+  framework:
+    type: esp-idf
+    version: recommended
+    sdkconfig_options:
+      # Cache optimizations for audio performance
+      CONFIG_ESP32S3_DATA_CACHE_64KB: "y"
+      CONFIG_ESP32S3_DATA_CACHE_LINE_64B: "y"
+      CONFIG_ESP32S3_INSTRUCTION_CACHE_32KB: "y"
+      # Move instructions and read-only data to PSRAM for faster execution
+      CONFIG_SPIRAM_RODATA: "y"
+      CONFIG_SPIRAM_FETCH_INSTRUCTIONS: "y"
+      # Bluetooth memory allocation from PSRAM
+      CONFIG_BT_ALLOCATION_FROM_SPIRAM_FIRST: "y"
+      CONFIG_BT_BLE_DYNAMIC_ENV_MEMORY: "y"
+      # TLS optimizations
+      CONFIG_MBEDTLS_EXTERNAL_MEM_ALLOC: "y"
+      CONFIG_MBEDTLS_SSL_PROTO_TLS1_3: "y"
+
+psram:
+  mode: octal
+  speed: 80MHz
+  ignore_not_found: false
