@@ -62,16 +62,20 @@ wifi:
     - logger.log: "WiFi connected, starting delayed boot init"
     - script.execute: delayed_boot_init
 
-# E-ink specific: slower clock refresh (15 min vs 1 min for LCD)
-interval:
-  - interval: 15min
-    then:
-      - if:
-          condition:
-            lambda: "return id(boot_complete) && !id(is_playing);"
-          then:
-            - component.update: eink_display
-            - logger.log: "Clock updated (15min interval)"
+# E-ink specific: refresh at :00, :10, :20, :30, :40, :50 (ACeP displays don't support partial refresh)
+time:
+  - platform: homeassistant
+    id: !extend homeassistant_time
+    on_time:
+      - minutes: 0,10,20,30,40,50
+        seconds: 0
+        then:
+          - if:
+              condition:
+                lambda: "return id(boot_complete) && !id(is_playing);"
+              then:
+                - component.update: eink_display
+                - logger.log: "Clock updated (on the 10s)"
 
 # Media player state callbacks (display-only device still needs these)
 media_player:
@@ -123,8 +127,14 @@ display:
         it.filled_rectangle(0, 0, 600, 448, id(my_white));
         it.rectangle(20, 20, 560, 408, id(my_black));
         auto now = id(homeassistant_time).now();
-        it.strftime(300, 160, id(font_time), id(my_black), TextAlign::CENTER, "%H:%M", now);
-        it.strftime(300, 260, id(font_date), id(my_black), TextAlign::CENTER, "%A, %B %d", now);
+        // 12-hour format: strip leading zero from hour
+        int hour = now.hour % 12;
+        if (hour == 0) hour = 12;
+        char time_str[8];
+        snprintf(time_str, sizeof(time_str), "%d:%02d", hour, now.minute);
+        it.print(300, 150, id(font_time), id(my_black), TextAlign::CENTER, time_str);
+        it.strftime(300, 230, id(font_date), id(my_black), TextAlign::CENTER, "%A, %B %d", now);
+        it.print(300, 290, id(font_artist), id(my_black), TextAlign::CENTER, "(give or take 10 minutes)");
         it.print(300, 380, id(font_idle_subtitle), id(my_black), TextAlign::CENTER, "Sendspin");
       } else {
         // ============ NOW PLAYING SCREEN ============
