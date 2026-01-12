@@ -131,7 +131,7 @@ See [PROJECT.md](PROJECT.md) for full architecture details and project vision.
 
 ## Acknowledgments
 
-- [Paulus Schoutsen](https://github.com/balloob) - Sendspin media player configs and Tab5/E-Ink display implementations
+- [Paulus Schoutsen](https://github.com/balloob) - Sendspin Tab5 configuration
 - [Sonocotta](https://github.com/sonocotta) - Louder ESP32-S3 hardware and TAS5805M integration
 
 ## License
