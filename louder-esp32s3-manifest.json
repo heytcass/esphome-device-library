@@ -1,13 +1,13 @@
 {
   "name": "louder-esp32s3",
-  "version": "2.3.0",
+  "version": "2.4.1",
   "home_assistant_domain": "esphome",
   "builds": [
     {
       "chipFamily": "ESP32-S3",
       "ota": {
         "path": "louder-esp32s3.bin",
-        "md5": "8728f5d7df73f863f3c9e2d1fbea7ce8"
+        "md5": "23581c518c0cf3ef07b933223e05f34f"
       }
     }
   ]
