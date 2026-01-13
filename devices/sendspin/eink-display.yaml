@@ -5,7 +5,7 @@
 substitutions:
   firmware_name: sendspin-eink-display
   # Sendspin role settings
-  cover_art_size: "600x600"
+  cover_art_size: "1200x1200"
   debounce_delay: "5s"
   display_id: eink_display
   # Font sizes for e-ink (smaller than LCD)
@@ -85,10 +85,9 @@ media_player:
           id: is_playing
           value: "true"
     on_pause:
-      - globals.set:
-          id: is_playing
-          value: "false"
-      - script.execute: debounced_refresh
+      # Keep showing album art when paused so user can resume with button
+      # Only switch to clock on_idle (when playback truly stops)
+      - logger.log: "Paused - keeping now playing screen"
     on_idle:
       - globals.set:
           id: is_playing
@@ -152,6 +151,17 @@ binary_sensor:
     on_press:
       - media_player.stop: sendspin_media_player
 
+# Icon font for button labels
+font:
+  - file: "https://github.com/Templarian/MaterialDesign-Webfont/raw/master/fonts/materialdesignicons-webfont.ttf"
+    id: mdi_icons
+    size: 36
+    glyphs:
+      - "\U000F040A"  # mdi:play-pause
+      - "\U000F04AE"  # mdi:skip-previous
+      - "\U000F04AD"  # mdi:skip-next
+      - "\U000F04DB"  # mdi:stop
+
 # SPI bus for e-ink display
 spi:
   clk_pin: GPIO12
@@ -189,9 +199,21 @@ display:
         it.print(300, 380, id(font_idle_subtitle), id(my_black), TextAlign::CENTER, "Sendspin");
       } else {
         // ============ NOW PLAYING SCREEN ============
+        // Layout: icon strip (left 48px), album art (fills right side), metadata bar (bottom)
         it.filled_rectangle(0, 0, 600, 448, id(my_black));
-        it.image(0, 0, id(sendspin_cover_art));
-        it.filled_rectangle(0, 392, 600, 56, id(my_black));
+
+        // Icon strip on left (full height)
+        it.filled_rectangle(0, 0, 48, 448, id(my_white));
+        it.print(24, 56, id(mdi_icons), id(my_black), TextAlign::CENTER, "\U000F040A");   // Play/Pause
+        it.print(24, 168, id(mdi_icons), id(my_black), TextAlign::CENTER, "\U000F04AE");  // Previous
+        it.print(24, 280, id(mdi_icons), id(my_black), TextAlign::CENTER, "\U000F04AD");  // Next
+        it.print(24, 392, id(mdi_icons), id(my_black), TextAlign::CENTER, "\U000F04DB");  // Stop
+
+        // Album art at (48,0) - 600x600 image, right 552px visible, bottom cropped
+        it.image(48, 0, id(sendspin_cover_art));
+
+        // Metadata bar at bottom
+        it.filled_rectangle(48, 392, 552, 56, id(my_black));
 
         std::string title = id(track_title).state;
         std::string artist = id(track_artist).state;
@@ -210,8 +232,8 @@ display:
         }
         if (subtitle.length() > 60) subtitle = subtitle.substr(0, 57) + "...";
 
-        it.print(12, 400, id(font_title), id(my_white), TextAlign::TOP_LEFT, title.c_str());
+        it.print(56, 400, id(font_title), id(my_white), TextAlign::TOP_LEFT, title.c_str());
         if (!subtitle.empty()) {
-          it.print(12, 424, id(font_artist), id(my_white), TextAlign::TOP_LEFT, subtitle.c_str());
+          it.print(56, 424, id(font_artist), id(my_white), TextAlign::TOP_LEFT, subtitle.c_str());
         }
       }
