@@ -1,0 +1,21 @@
+# Seeed Studio reTerminal E1002 — Factory Configuration
+# Productized config built by GitHub Actions for pre-built firmware.
+# Extends base with HTTP OTA updates, Improv provisioning, and dashboard
+# adoption.
+
+packages:
+  device: !include seeed-reterminal-e1002.yaml
+  http_ota: !include ../common/http-ota.yaml
+
+# Adopted devices pull the BASE config (no HTTP OTA), so local management
+# and central auto-updates can't conflict.
+dashboard_import:
+  package_import_url: github://heytcass/esphome-device-library/firmware/seeed-reterminal-e1002.yaml@main
+  import_full_config: false
+
+# Serial provisioning via USB
+improv_serial:
+
+# BLE provisioning for ESP32-S3
+esp32_improv:
+  authorizer: none

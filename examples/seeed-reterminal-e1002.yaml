@@ -1,0 +1,38 @@
+# Seeed Studio reTerminal E1002 — Example Configuration
+# Battery-powered 7.3" color e-paper with 3 buttons and SHT40 sensor.
+#
+# Copy this file and customize for your device.
+#
+# First boot:
+#   1. Flash using ESPHome web installer or CLI.
+#   2. Device creates a WiFi AP named "<device_name> Fallback".
+#   3. Connect and configure WiFi via the captive portal.
+#
+# Application-level logic (deep_sleep schedule, button actions, display
+# rendering) belongs in your own config on top of this package — the
+# device package exposes only hardware primitives.
+
+substitutions:
+  device_name: reterminal-e1002     # Change this! Must be unique
+  friendly_name: "reTerminal E1002"  # Shows in Home Assistant
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  min_version: "2025.11.0"
+
+packages:
+  base:
+    url: https://github.com/heytcass/esphome-device-library
+    ref: main
+    files:
+      - common/base.yaml
+      - common/http-ota.yaml
+      - common/esp32s3-psram-platform.yaml
+      - common/diagnostics.yaml
+      - devices/seeed/reterminal-e1002.yaml
+    refresh: 1d
+
+wifi:
+  ap:
+    ssid: "${device_name} Fallback"
