@@ -1,0 +1,26 @@
+# Seeed Studio reTerminal E1002 — Base Configuration
+# 7.3" color e-paper device.
+#
+# This is the adoptable config — users import this when adopting in
+# ESPHome Dashboard. For pre-built firmware with auto-updates, see
+# seeed-reterminal-e1002.factory.yaml.
+
+substitutions:
+  device_name: seeed-reterminal-e1002
+  friendly_name: "Seeed reTerminal E1002"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: true
+  min_version: "2025.11.0"
+
+packages:
+  base: !include ../common/base.yaml
+  platform: !include ../common/esp32s3-psram-platform.yaml
+  diagnostics: !include ../common/diagnostics.yaml
+  hardware: !include ../devices/seeed/reterminal-e1002.yaml
+
+wifi:
+  ap:
+    ssid: "${device_name} Fallback"

@@ -1,0 +1,197 @@
+# Seeed Studio reTerminal E1002 — Hardware Configuration
+# ESP32-S3R8 (8MB octal PSRAM, 32MB flash) with 7.3" 800x480 Spectra 6 ACeP
+# e-paper, 3 buttons, piezo buzzer, SHT40 temp/humidity, USB-C LiPo.
+#
+# Platform config (variant, PSRAM mode, CPU freq, sdkconfig) is inherited
+# from common/esp32s3-psram-platform.yaml. This file contains only what's
+# specific to the E1002: board, flash, pins, hardware peripherals.
+#
+# Display: full-refresh only (~15-30s per render). No partial refresh. Six
+# native pigments (black/white/yellow/red/green/blue); do not assume
+# grayscale or 24-bit color.
+#
+# References:
+#   - Seeed wiki (getting started): https://wiki.seeedstudio.com/getting_started_with_reterminal_e1002/
+#   - Seeed wiki (ESPHome basic):   https://wiki.seeedstudio.com/reterminal_e10xx_with_esphome/
+#   - Seeed wiki (ESPHome advanced):https://wiki.seeedstudio.com/reterminal_e10xx_with_esphome_advanced/
+#   - Guy Sie reference YAML:       https://github.com/GuySie/random-things/blob/main/Seeed-reTerminal-E1002/seeed-reterminal-art-display.yaml
+#   - ESPHome epaper_spi docs:      https://esphome.io/components/display/epaper_spi/
+#
+# Requires ESPHome 2025.11.0+ (introduces native `Seeed-reTerminal-E1002`
+# model string in the epaper_spi platform, which auto-configures the CS/DC/
+# RST/BUSY pins). Pin `min_version:` in the firmware config, not here.
+
+substitutions:
+  firmware_name: seeed-reterminal-e1002
+  # Display rotation in degrees: 0, 90, 180, 270
+  display_rotation: "0"
+  # Buzzer tone pitch. Piezo is sharp around 1kHz, softer at 100Hz.
+  # Guy Sie's reference uses 100Hz; consumers using rtttl for melodies
+  # may prefer 1000Hz.
+  buzzer_frequency: "100Hz"
+
+# Override platform default (16MB) — E1002 ships with 32MB flash.
+# variant/psram/cpu/framework inherited from esp32s3-psram-platform.yaml.
+esp32:
+  board: esp32-s3-devkitc-1
+  flash_size: 32MB
+
+# E-paper refresh blocks the main loop for 15-30s; disable API reboot
+# timeout so a long render doesn't trigger spurious reconnect cycles.
+# (Mirrors sendspin-eink-display precedent for e-paper devices.)
+api:
+  reboot_timeout: 0s
+
+# Battery ADC rail must be enabled before sensor reads. Priority 600 runs
+# early in boot, before the ADC component initializes.
+esphome:
+  on_boot:
+    - priority: 600
+      then:
+        - output.turn_on: bsp_battery_enable
+
+spi:
+  clk_pin: GPIO7
+  mosi_pin: GPIO9
+
+i2c:
+  sda: GPIO19
+  scl: GPIO20
+
+# E-paper display. The `model: Seeed-reTerminal-E1002` string causes
+# ESPHome to auto-configure cs/dc/reset/busy pins — do not redeclare them.
+# update_interval: never + auto_clear_enabled: false gives the consumer
+# full control over when the frame renders and what's in it.
+display:
+  - platform: epaper_spi
+    id: epaper_display
+    model: Seeed-reTerminal-E1002
+    update_interval: never
+    auto_clear_enabled: false
+    rotation: ${display_rotation}
+
+# Buttons — bare GPIO primitives. Consumers attach behavior via:
+#   binary_sensor:
+#     - id: !extend button_left
+#       on_press: [...]
+# All three pins can serve as ESP32-S3 EXT1 deep-sleep wake sources; the
+# consumer configures `deep_sleep:` + `esp32_ext1_wakeup:` themselves since
+# sleep cadence is application-specific.
+binary_sensor:
+  - platform: gpio
+    id: button_left
+    pin:
+      number: GPIO5
+      mode: INPUT_PULLUP
+      inverted: true
+
+  - platform: gpio
+    id: button_right
+    pin:
+      number: GPIO4
+      mode: INPUT_PULLUP
+      inverted: true
+
+  - platform: gpio
+    id: button_green
+    pin:
+      number: GPIO3
+      mode: INPUT_PULLUP
+      inverted: true
+
+sensor:
+  # Onboard SHT40 temperature/humidity at I2C address 0x44. Generic IDs
+  # intentionally — consumers rename via !extend + name: override.
+  - platform: sht4x
+    address: 0x44
+    update_interval: 60s
+    temperature:
+      id: onboard_temperature
+      name: "Temperature"
+    humidity:
+      id: onboard_humidity
+      name: "Humidity"
+
+  # Battery voltage on GPIO1 via a 2:1 divider; multiply filter compensates.
+  # The bsp_battery_enable output gates the divider rail (see on_boot).
+  - platform: adc
+    pin: GPIO1
+    id: battery_voltage
+    name: "Battery Voltage"
+    internal: true
+    update_interval: 20s
+    attenuation: 12db
+    filters:
+      - multiply: 2.0
+
+  # Battery level via calibrate_linear. Curve taken verbatim from Guy Sie's
+  # reference YAML (see file header); originates from Seeed's advanced wiki.
+  - platform: template
+    name: "Battery Level"
+    id: battery_level
+    entity_category: diagnostic
+    unit_of_measurement: "%"
+    icon: "mdi:battery"
+    device_class: battery
+    state_class: measurement
+    lambda: "return id(battery_voltage).state;"
+    update_interval: 10s
+    filters:
+      - calibrate_linear:
+          - 4.15 -> 100.0
+          - 3.96 -> 90.0
+          - 3.91 -> 80.0
+          - 3.85 -> 70.0
+          - 3.80 -> 60.0
+          - 3.75 -> 50.0
+          - 3.68 -> 40.0
+          - 3.58 -> 30.0
+          - 3.49 -> 20.0
+          - 3.41 -> 10.0
+          - 3.30 -> 5.0
+          - 3.27 -> 0.0
+      - clamp:
+          min_value: 0
+          max_value: 100
+
+output:
+  # Onboard green LED (active-low).
+  - platform: gpio
+    id: led_output
+    pin:
+      number: GPIO6
+      inverted: true
+
+  # Piezo buzzer PWM. Consumers add `rtttl:` on top for named tones:
+  #   rtttl:
+  #     output: buzzer_pwm
+  #     id: buzzer_player
+  # Do not wrap with light.monochromatic here — it would conflict with
+  # rtttl using the same output.
+  - platform: ledc
+    id: buzzer_pwm
+    pin: GPIO45
+    frequency: ${buzzer_frequency}
+
+  # Battery ADC rail enable. Turned on in on_boot priority 600.
+  - platform: gpio
+    id: bsp_battery_enable
+    pin: GPIO21
+
+# Expose the onboard LED as a HA-controllable binary light; disabled by
+# default since most consumers won't want it surfaced.
+light:
+  - platform: binary
+    id: onboard_led
+    name: "LED"
+    output: led_output
+    entity_category: diagnostic
+    disabled_by_default: true
+
+# Items deliberately NOT in this package:
+#   - rtttl (application-specific; SPEC for office_panel uses named tones)
+#   - deep_sleep (wake cadence is application-specific)
+#   - USB-C charge-detect binary_sensor (no documented GPIO in any primary
+#     reference for this hardware; probe during hardware bring-up)
+#   - microphone / PDM (pins undocumented)
+#   - microSD (not required by known consumers)
