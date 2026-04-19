@@ -31,10 +31,15 @@ substitutions:
   buzzer_frequency: "100Hz"
 
 # Override platform default (16MB) — E1002 ships with 32MB flash.
+# ESP-IDF OTA with >16MB flash is still behind an experimental feature
+# flag in ESPHome 2026.4; opt in so the firmware can actually compile.
 # variant/psram/cpu/framework inherited from esp32s3-psram-platform.yaml.
 esp32:
   board: esp32-s3-devkitc-1
   flash_size: 32MB
+  framework:
+    advanced:
+      enable_idf_experimental_features: true
 
 # E-paper refresh blocks the main loop for 15-30s; disable API reboot
 # timeout so a long render doesn't trigger spurious reconnect cycles.
