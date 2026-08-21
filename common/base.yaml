@@ -13,14 +13,25 @@ logger:
   logs:
     component: ERROR
 
-# API for Home Assistant connection
-# No encryption by default - users can add encryption in their own config
+# API for Home Assistant connection.
+# Keyless encryption: no key is compiled in; Home Assistant generates a
+# unique per-device key on first connection and the device stores it in
+# NVS (survives OTA updates). Devices previously running unencrypted
+# firmware will re-provision on first connect after updating — Home
+# Assistant may prompt once per device.
 api:
   reboot_timeout: 15min
+  encryption:
 
-# OTA updates - no password by default for easy recovery
+# OTA updates. The password is deliberately PUBLIC (it's in this repo) —
+# it cannot stop an attacker who has read the source, but it does stop
+# drive-by scanners and mass-exploitation scripts probing the standard
+# ESPHome OTA port on the LAN. Recovery stays easy: the password is
+# always readable here. Override via !extend ota_esphome if desired.
 ota:
   - platform: esphome
+    id: ota_esphome
+    password: "esphome-device-library-public"
 
 safe_mode:
 
@@ -30,7 +41,10 @@ mdns:
   disabled: false
 
 # WiFi - no compiled credentials, uses stored credentials from NVS
-# On first boot, device creates AP for provisioning via captive portal
+# On first boot, device creates AP for provisioning via captive portal.
+# The AP password is fleet-wide and public by necessity (shared firmware
+# can't hold per-device secrets). The AP only exists while the device
+# has no working WiFi — see "Security model" in the README.
 wifi:
   min_auth_mode: WPA2  # Reject weaker security (ESPHome 2025.11.0+)
   ap:

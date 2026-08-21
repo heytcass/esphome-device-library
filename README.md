@@ -114,6 +114,32 @@ examples/         # Templates to copy and customize
 **Base configs** (`device.yaml`) contain all device functionality and are what users get when adopting.
 **Factory configs** (`device.factory.yaml`) extend base with productized features (HTTP OTA, Improv, dashboard_import).
 
+## Security Model
+
+Shared, pre-built firmware cannot contain per-device secrets, so this project is explicit
+about what is protected and what is a documented trade-off:
+
+- **API encryption — per-device keys, provisioned at runtime.** Firmware ships keyless
+  (`api: encryption:` with no key). Home Assistant generates a unique key for each device on
+  first connection and the device stores it in flash, where it survives OTA updates. Devices
+  updating from older unencrypted firmware re-provision on first connect — Home Assistant may
+  prompt once per device. Adopted devices get their key from the ESPHome Device Builder as
+  before.
+- **Local OTA password is public by design.** The password on the standard ESPHome OTA port
+  is in this repo, so it is not a secret — it exists to stop drive-by scanners and
+  mass-exploitation scripts on your LAN, not a determined attacker who has read the source.
+  Override it in your own config (`!extend ota_esphome`) if you want a private one.
+- **ESP8266 update channel is not authenticated.** ESP8266 devices (like the Sonoff S31)
+  fetch update manifests and firmware with `verify_ssl: false` because the ESP8266 TLS stack
+  cannot do full certificate verification; the MD5 checksum is integrity-only. An attacker
+  who already controls your network path could serve forged firmware to ESP8266 devices.
+  ESP32 devices verify TLS fully and are not affected. If this is outside your threat model
+  for a smart plug, adopt the device instead and manage updates locally.
+- **Fallback AP password is fleet-wide and public** (`esphome123`). The AP only exists while
+  the device has no working WiFi (first boot, or your network is down); someone within radio
+  range during that window could join it and reconfigure the device's WiFi. Prefer Improv
+  (USB/BLE) provisioning where available.
+
 ## Contributing
 
 Want to add a new device? See [CONTRIBUTING.md](CONTRIBUTING.md) for step-by-step instructions.
