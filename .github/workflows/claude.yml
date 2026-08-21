@@ -13,12 +13,18 @@ on:
 jobs:
   claude:
     if: |
-      (github.event_name == 'issues' && github.event.action == 'labeled' && github.event.label.name == 'claude') ||
-      (github.event_name == 'issues' && github.event.action == 'opened' && contains(github.event.issue.labels.*.name, 'claude')) ||
-      (github.event_name == 'issue_comment' && contains(github.event.issue.labels.*.name, 'claude')) ||
-      (github.event_name == 'pull_request' && github.event.action == 'labeled' && github.event.label.name == 'claude') ||
-      (github.event_name == 'pull_request' && github.event.action == 'opened' && contains(github.event.pull_request.labels.*.name, 'claude')) ||
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.pull_request.labels.*.name, 'claude'))
+      (github.event_name == 'issues' && github.event.action == 'labeled' &&
+        github.event.label.name == 'claude') ||
+      (github.event_name == 'issues' && github.event.action == 'opened' &&
+        contains(github.event.issue.labels.*.name, 'claude')) ||
+      (github.event_name == 'issue_comment' &&
+        contains(github.event.issue.labels.*.name, 'claude')) ||
+      (github.event_name == 'pull_request' && github.event.action == 'labeled' &&
+        github.event.label.name == 'claude') ||
+      (github.event_name == 'pull_request' && github.event.action == 'opened' &&
+        contains(github.event.pull_request.labels.*.name, 'claude')) ||
+      (github.event_name == 'pull_request_review_comment' &&
+        contains(github.event.pull_request.labels.*.name, 'claude'))
     runs-on: ubuntu-latest
     permissions:
       contents: write
