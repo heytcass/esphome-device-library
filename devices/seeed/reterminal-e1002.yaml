@@ -43,7 +43,6 @@ esp32:
 
 # E-paper refresh blocks the main loop for 15-30s; disable API reboot
 # timeout so a long render doesn't trigger spurious reconnect cycles.
-# (Mirrors sendspin-eink-display precedent for e-paper devices.)
 api:
   reboot_timeout: 0s
 

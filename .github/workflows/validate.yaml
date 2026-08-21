@@ -14,9 +14,6 @@ jobs:
         config:
           - examples/wyze-outdoor-plug.yaml
           - examples/sonoff-s31.yaml
-          - examples/sonocotta-louder-esp32s3.yaml
-          - examples/sendspin-eink-display.yaml
-          - examples/sendspin-tab5.yaml
           - examples/seeed-reterminal-e1002.yaml
 
     steps:

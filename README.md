@@ -14,9 +14,6 @@ Unlike static config collections that rot over time, devices using this library 
 |--------|----------|----------|
 | [Wyze Outdoor Plug](devices/wyze/outdoor-plug.yaml) | ESP32 | Dual outlets, power monitoring, light sensor |
 | [Sonoff S31](devices/sonoff/s31.yaml) | ESP8266 | Smart plug with power monitoring |
-| [Sonocotta Louder ESP32-S3](devices/sonocotta/louder-esp32s3.yaml) | ESP32-S3 | TAS5805M DAC media player, Spotify Connect, 15-band EQ |
-| [Sendspin Tab5](devices/sendspin/tab5.yaml) | ESP32-P4 | M5Stack Tab5 with MIPI DSI display, Sendspin media player |
-| [Sendspin E-Ink Display](devices/sendspin/eink-display.yaml) | ESP32-S3 | 5.65" 7-color ACeP e-ink, album art + clock, physical playback buttons |
 | [Seeed reTerminal E1002](devices/seeed/reterminal-e1002.yaml) | ESP32-S3 | 7.3" 800x480 Spectra 6 ACeP e-paper, 3 buttons, piezo buzzer, SHT40 temp/humidity, battery + USB-C |
 
 ## Quick Start (ESPHome Dashboard)
@@ -129,11 +126,6 @@ See [PROJECT.md](PROJECT.md) for full architecture details and project vision.
 
 - [ESPHome Documentation](https://esphome.io/)
 - [Firmware Manifests](https://heytcass.github.io/esphome-device-library/)
-
-## Acknowledgments
-
-- [Paulus Schoutsen](https://github.com/balloob) - Sendspin Tab5 configuration
-- [Sonocotta](https://github.com/sonocotta) - Louder ESP32-S3 hardware and TAS5805M integration
 
 ## License
 
