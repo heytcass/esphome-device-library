@@ -1,13 +1,13 @@
 {
   "name": "sonoff-s31",
-  "version": "2.4.1",
+  "version": "3.0.0",
   "home_assistant_domain": "esphome",
   "builds": [
     {
       "chipFamily": "ESP8266",
       "ota": {
         "path": "sonoff-s31.bin",
-        "md5": "19107c0a67942aaa074f5ff2803c913a"
+        "md5": "7c2b0795e3a4c2195c4f4fee9245a75f"
       }
     }
   ]

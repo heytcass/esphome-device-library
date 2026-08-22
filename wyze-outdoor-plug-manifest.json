@@ -1,13 +1,13 @@
 {
   "name": "wyze-outdoor-plug",
-  "version": "2.4.1",
+  "version": "3.0.0",
   "home_assistant_domain": "esphome",
   "builds": [
     {
       "chipFamily": "ESP32",
       "ota": {
         "path": "wyze-outdoor-plug.bin",
-        "md5": "760765b3bf8d730185ddec111f1dcc10"
+        "md5": "56a15d83aac885fc9fdda99c0f212252"
       }
     }
   ]

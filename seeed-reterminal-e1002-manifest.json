@@ -1,0 +1,14 @@
+{
+  "name": "seeed-reterminal-e1002",
+  "version": "3.0.0",
+  "home_assistant_domain": "esphome",
+  "builds": [
+    {
+      "chipFamily": "ESP32-S3",
+      "ota": {
+        "path": "seeed-reterminal-e1002.bin",
+        "md5": "e1adc3ca30c3f99ee9dcd8b94848c270"
+      }
+    }
+  ]
+}
