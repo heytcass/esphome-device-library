@@ -14,7 +14,8 @@
 #   - Seeed wiki (getting started): https://wiki.seeedstudio.com/getting_started_with_reterminal_e1002/
 #   - Seeed wiki (ESPHome basic):   https://wiki.seeedstudio.com/reterminal_e10xx_with_esphome/
 #   - Seeed wiki (ESPHome advanced):https://wiki.seeedstudio.com/reterminal_e10xx_with_esphome_advanced/
-#   - Guy Sie reference YAML:       https://github.com/GuySie/random-things/blob/main/Seeed-reTerminal-E1002/seeed-reterminal-art-display.yaml
+#   - Guy Sie reference YAML (seeed-reterminal-art-display.yaml):
+#     https://github.com/GuySie/random-things/tree/main/Seeed-reTerminal-E1002
 #   - ESPHome epaper_spi docs:      https://esphome.io/components/display/epaper_spi/
 #
 # Requires ESPHome 2025.11.0+ (introduces native `Seeed-reTerminal-E1002`
@@ -43,7 +44,6 @@ esp32:
 
 # E-paper refresh blocks the main loop for 15-30s; disable API reboot
 # timeout so a long render doesn't trigger spurious reconnect cycles.
-# (Mirrors sendspin-eink-display precedent for e-paper devices.)
 api:
   reboot_timeout: 0s
 

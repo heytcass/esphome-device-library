@@ -32,12 +32,6 @@ jobs:
             chip_family: ESP32
           - config: firmware/sonoff-s31.factory.yaml
             chip_family: ESP8266
-          - config: firmware/sonocotta-louder-esp32s3.factory.yaml
-            chip_family: ESP32-S3
-          - config: firmware/sendspin-eink-display.factory.yaml
-            chip_family: ESP32-S3
-          - config: firmware/sendspin-tab5.factory.yaml
-            chip_family: ESP32-P4
           - config: firmware/seeed-reterminal-e1002.factory.yaml
             chip_family: ESP32-S3
 

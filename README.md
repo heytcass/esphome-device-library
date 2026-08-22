@@ -14,9 +14,6 @@ Unlike static config collections that rot over time, devices using this library 
 |--------|----------|----------|
 | [Wyze Outdoor Plug](devices/wyze/outdoor-plug.yaml) | ESP32 | Dual outlets, power monitoring, light sensor |
 | [Sonoff S31](devices/sonoff/s31.yaml) | ESP8266 | Smart plug with power monitoring |
-| [Sonocotta Louder ESP32-S3](devices/sonocotta/louder-esp32s3.yaml) | ESP32-S3 | TAS5805M DAC media player, Spotify Connect, 15-band EQ |
-| [Sendspin Tab5](devices/sendspin/tab5.yaml) | ESP32-P4 | M5Stack Tab5 with MIPI DSI display, Sendspin media player |
-| [Sendspin E-Ink Display](devices/sendspin/eink-display.yaml) | ESP32-S3 | 5.65" 7-color ACeP e-ink, album art + clock, physical playback buttons |
 | [Seeed reTerminal E1002](devices/seeed/reterminal-e1002.yaml) | ESP32-S3 | 7.3" 800x480 Spectra 6 ACeP e-paper, 3 buttons, piezo buzzer, SHT40 temp/humidity, battery + USB-C |
 
 ## Quick Start (ESPHome Dashboard)
@@ -117,6 +114,32 @@ examples/         # Templates to copy and customize
 **Base configs** (`device.yaml`) contain all device functionality and are what users get when adopting.
 **Factory configs** (`device.factory.yaml`) extend base with productized features (HTTP OTA, Improv, dashboard_import).
 
+## Security Model
+
+Shared, pre-built firmware cannot contain per-device secrets, so this project is explicit
+about what is protected and what is a documented trade-off:
+
+- **API encryption — per-device keys, provisioned at runtime.** Firmware ships keyless
+  (`api: encryption:` with no key). Home Assistant generates a unique key for each device on
+  first connection and the device stores it in flash, where it survives OTA updates. Devices
+  updating from older unencrypted firmware re-provision on first connect — Home Assistant may
+  prompt once per device. Adopted devices get their key from the ESPHome Device Builder as
+  before.
+- **Local OTA password is public by design.** The password on the standard ESPHome OTA port
+  is in this repo, so it is not a secret — it exists to stop drive-by scanners and
+  mass-exploitation scripts on your LAN, not a determined attacker who has read the source.
+  Override it in your own config (`!extend ota_esphome`) if you want a private one.
+- **ESP8266 update channel is not authenticated.** ESP8266 devices (like the Sonoff S31)
+  fetch update manifests and firmware with `verify_ssl: false` because the ESP8266 TLS stack
+  cannot do full certificate verification; the MD5 checksum is integrity-only. An attacker
+  who already controls your network path could serve forged firmware to ESP8266 devices.
+  ESP32 devices verify TLS fully and are not affected. If this is outside your threat model
+  for a smart plug, adopt the device instead and manage updates locally.
+- **Fallback AP password is fleet-wide and public** (`esphome123`). The AP only exists while
+  the device has no working WiFi (first boot, or your network is down); someone within radio
+  range during that window could join it and reconfigure the device's WiFi. Prefer Improv
+  (USB/BLE) provisioning where available.
+
 ## Contributing
 
 Want to add a new device? See [CONTRIBUTING.md](CONTRIBUTING.md) for step-by-step instructions.
@@ -129,11 +152,6 @@ See [PROJECT.md](PROJECT.md) for full architecture details and project vision.
 
 - [ESPHome Documentation](https://esphome.io/)
 - [Firmware Manifests](https://heytcass.github.io/esphome-device-library/)
-
-## Acknowledgments
-
-- [Paulus Schoutsen](https://github.com/balloob) - Sendspin Tab5 configuration
-- [Sonocotta](https://github.com/sonocotta) - Louder ESP32-S3 hardware and TAS5805M integration
 
 ## License
 
