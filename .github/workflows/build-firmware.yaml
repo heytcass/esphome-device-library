@@ -20,7 +20,15 @@ on:
       - ".github/workflows/build-firmware.yaml"
   release:
     types: [published]
+  # Dispatching with a version (e.g. v3.0.0) runs the full release
+  # pipeline: build, create the tag + GitHub Release with assets, and
+  # deploy manifests to Pages. Without a version it's a plain test build.
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version tag to create (e.g. v3.0.0); empty = test build only"
+        required: false
+        default: ""
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -68,6 +76,8 @@ jobs:
             VERSION="${{ github.event.release.tag_name }}"
           elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
             VERSION="${{ github.ref_name }}"
+          elif [ -n "${{ inputs.version }}" ]; then
+            VERSION="${{ inputs.version }}"
           else
             VERSION="dev"
           fi
@@ -150,7 +160,10 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/')
+    if: >-
+      github.event_name == 'release' ||
+      startsWith(github.ref, 'refs/tags/') ||
+      (github.event_name == 'workflow_dispatch' && inputs.version != '')
     permissions:
       contents: write
 
@@ -165,13 +178,14 @@ jobs:
       - name: List downloaded files
         run: ls -la firmware/
 
-      # Creates the GitHub Release for the tag if it doesn't exist yet
-      # (tag-push flow), or adds assets to it (release-published flow).
-      # Done here rather than per-matrix so the release is created once.
+      # Creates the tag and GitHub Release if they don't exist yet
+      # (tag-push and dispatch-with-version flows), or adds assets to the
+      # existing release (release-published flow). Done here rather than
+      # per-matrix so the release is created once.
       - name: Publish release with firmware assets
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.event.release.tag_name || github.ref_name }}
+          tag_name: ${{ github.event.release.tag_name || inputs.version || github.ref_name }}
           generate_release_notes: true
           files: |
             firmware/*.bin
@@ -186,4 +200,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./firmware
           keep_files: false
-          commit_message: "Deploy firmware ${{ github.event.release.tag_name || github.ref_name }}"
+          commit_message: "Deploy firmware ${{ github.event.release.tag_name || inputs.version || github.ref_name }}"
