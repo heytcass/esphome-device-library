@@ -59,8 +59,26 @@ jobs:
       proceed: ${{ steps.decide.outputs.proceed }}
       do_release: ${{ steps.decide.outputs.do_release }}
       esphome_version: ${{ steps.esphome.outputs.version }}
+      config_hash: ${{ steps.confighash.outputs.hash }}
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Fingerprint only the inputs that actually change firmware. Using the
+      # whole-repo commit here would make every CI or docs change trigger a
+      # rebuild, reflashing the fleet with functionally identical binaries.
+      - name: Compute config hash
+        id: confighash
+        run: |
+          CONFIG_HASH=$(printf '%s\n' \
+            "$(git rev-parse "HEAD:common" 2>/dev/null || echo missing)" \
+            "$(git rev-parse "HEAD:devices" 2>/dev/null || echo missing)" \
+            "$(git rev-parse "HEAD:firmware" 2>/dev/null || echo missing)" \
+            | sha256sum | cut -c1-16)
+          echo "hash=${CONFIG_HASH}" >> "$GITHUB_OUTPUT"
+          echo "Config hash: ${CONFIG_HASH}"
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -84,6 +102,7 @@ jobs:
           INPUT_VERSION: ${{ inputs.version }}
           RELEASE_TAG: ${{ github.event.release.tag_name }}
           ESPHOME_VERSION: ${{ steps.esphome.outputs.version }}
+          CONFIG_HASH: ${{ steps.confighash.outputs.hash }}
         run: |
           set -euo pipefail
           PROCEED=true
@@ -105,12 +124,12 @@ jobs:
             PREV=$(gh api "repos/${GITHUB_REPOSITORY}/contents/build-info.json?ref=gh-pages" \
               --jq '.content' 2>/dev/null | tr -d '\n' | base64 -d 2>/dev/null || echo '{}')
             PREV_ESPHOME=$(echo "${PREV}" | jq -r '.esphome_version // empty')
-            PREV_COMMIT=$(echo "${PREV}" | jq -r '.source_commit // empty')
+            PREV_CONFIG=$(echo "${PREV}" | jq -r '.config_hash // empty')
 
-            if [ "${PREV_ESPHOME}" = "${ESPHOME_VERSION}" ] && [ "${PREV_COMMIT}" = "${GITHUB_SHA}" ]; then
+            if [ "${PREV_ESPHOME}" = "${ESPHOME_VERSION}" ] && [ "${PREV_CONFIG}" = "${CONFIG_HASH}" ]; then
               PROCEED=false
-              echo "No rebuild needed: ESPHome ${ESPHOME_VERSION} and source" \
-                "${GITHUB_SHA} both match the last release." >> "$GITHUB_STEP_SUMMARY"
+              echo "No rebuild needed: ESPHome ${ESPHOME_VERSION} and device" \
+                "configs ${CONFIG_HASH} both match the last release." >> "$GITHUB_STEP_SUMMARY"
             else
               LAST_TAG=$(gh release view --json tagName --jq '.tagName' 2>/dev/null || echo "")
               if [ -z "${LAST_TAG}" ]; then
@@ -129,7 +148,7 @@ jobs:
               {
                 echo "Rebuilding as ${VERSION}."
                 echo "- ESPHome: ${PREV_ESPHOME:-none} -> ${ESPHOME_VERSION}"
-                echo "- Source: ${PREV_COMMIT:-none} -> ${GITHUB_SHA}"
+                echo "- Device configs: ${PREV_CONFIG:-none} -> ${CONFIG_HASH}"
               } >> "$GITHUB_STEP_SUMMARY"
             fi
           fi
@@ -259,6 +278,9 @@ jobs:
       contents: write
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Download all firmware artifacts
         uses: actions/download-artifact@v4
         with:
@@ -275,14 +297,22 @@ jobs:
         env:
           VERSION: ${{ needs.prepare.outputs.version }}
           ESPHOME_VERSION: ${{ needs.prepare.outputs.esphome_version }}
+          CONFIG_HASH: ${{ needs.prepare.outputs.config_hash }}
         run: |
           jq -n \
             --arg version "${VERSION#v}" \
             --arg esphome_version "${ESPHOME_VERSION}" \
+            --arg config_hash "${CONFIG_HASH}" \
             --arg source_commit "${GITHUB_SHA}" \
             --arg built_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             '$ARGS.named' > firmware/build-info.json
           cat firmware/build-info.json
+
+      # The Pages root had no index.html, so the manifest URL published in
+      # the README returned 404. Build a landing page from the manifests
+      # this release actually shipped.
+      - name: Generate Pages index
+        run: ./scripts/generate-index.sh firmware
 
       # Creates the tag and GitHub Release if they don't exist yet
       # (tag-push, dispatch-with-version and scheduled flows), or adds
