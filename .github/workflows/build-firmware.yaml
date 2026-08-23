@@ -259,6 +259,9 @@ jobs:
       contents: write
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Download all firmware artifacts
         uses: actions/download-artifact@v4
         with:
@@ -283,6 +286,12 @@ jobs:
             --arg built_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             '$ARGS.named' > firmware/build-info.json
           cat firmware/build-info.json
+
+      # The Pages root had no index.html, so the manifest URL published in
+      # the README returned 404. Build a landing page from the manifests
+      # this release actually shipped.
+      - name: Generate Pages index
+        run: ./scripts/generate-index.sh firmware
 
       # Creates the tag and GitHub Release if they don't exist yet
       # (tag-push, dispatch-with-version and scheduled flows), or adds

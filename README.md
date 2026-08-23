@@ -163,7 +163,7 @@ See [PROJECT.md](PROJECT.md) for full architecture details and project vision.
 ## Links
 
 - [ESPHome Documentation](https://esphome.io/)
-- [Firmware Manifests](https://heytcass.github.io/esphome-device-library/)
+- [Firmware downloads & manifests](https://heytcass.github.io/esphome-device-library/)
 
 ## License
 
