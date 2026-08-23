@@ -1,0 +1,65 @@
+name: New device
+description: Propose adding an off-the-shelf device to the library
+labels: ["new-device"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This library builds maintained, auto-updating firmware for **off-the-shelf devices
+        you can buy** — smart plugs, sensors, displays. Every device here is rebuilt monthly
+        against current ESPHome, so adding one is an ongoing commitment rather than a
+        one-time config dump.
+
+        Devices need someone with the hardware who can verify a release still works. If
+        that is you, say so below — see
+        [MAINTAINERS.md][maintainers].
+
+        [maintainers]: https://github.com/heytcass/esphome-device-library/blob/main/MAINTAINERS.md
+  - type: input
+    id: device
+    attributes:
+      label: Device
+      description: Brand and exact model, as printed on the device or its box.
+      placeholder: "Athom Smart Plug V3 (EU)"
+    validations:
+      required: true
+  - type: input
+    id: link
+    attributes:
+      label: Product or teardown link
+      description: Where it can be bought, or a teardown showing the pinout.
+    validations:
+      required: true
+  - type: dropdown
+    id: chip
+    attributes:
+      label: Chip
+      options:
+        - ESP32
+        - ESP32-S3
+        - ESP32-C3
+        - ESP32-P4
+        - ESP8266
+        - Other / not sure
+    validations:
+      required: true
+  - type: textarea
+    id: existing
+    attributes:
+      label: Existing configuration
+      description: >
+        Link any config you are already running, or the devices.esphome.io page. Pin
+        assignments and calibration values are the hard part — say where yours came from.
+    validations:
+      required: true
+  - type: checkboxes
+    id: commitments
+    attributes:
+      label: Before submitting
+      options:
+        - label: I own this device and can flash and test it on real hardware
+          required: true
+        - label: The device is ESP-based and can be flashed without soldering, or I can document the process
+          required: false
+        - label: I am willing to be listed as its maintainer and re-test it when releases break
+          required: false

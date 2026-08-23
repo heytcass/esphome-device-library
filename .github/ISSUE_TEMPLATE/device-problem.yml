@@ -1,0 +1,50 @@
+name: Device problem
+description: A device misbehaves, fails to update, or firmware fails to build
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device
+      options:
+        - Wyze Outdoor Plug
+        - Sonoff S31
+        - Seeed reTerminal E1002
+        - Other / not listed
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: How is it running?
+      description: >
+        This matters: pre-built firmware auto-updates and gets its encryption key from
+        Home Assistant, while adopted devices are managed by you.
+      options:
+        - Pre-built firmware from a release (not adopted)
+        - Adopted in the ESPHome dashboard
+        - My own config importing packages from this repo
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Firmware version
+      description: Shown by the device's update entity in Home Assistant, or in its logs.
+      placeholder: "3.0.0"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happens, and what you expected instead
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: >
+        Device logs (`esphome logs`, or the Home Assistant ESPHome integration), or the
+        failing build output. Paste as text rather than a screenshot so it is searchable.
+      render: shell

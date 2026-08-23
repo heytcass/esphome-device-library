@@ -157,6 +157,10 @@ about what is protected and what is a documented trade-off:
 
 Want to add a new device? See [CONTRIBUTING.md](CONTRIBUTING.md) for step-by-step instructions.
 
+Devices need someone with the hardware to keep them honest — [MAINTAINERS.md](MAINTAINERS.md)
+lists who looks after what, what that actually involves (not much, most months), and how to
+put your hand up for a device you own.
+
 ## Architecture
 
 See [PROJECT.md](PROJECT.md) for full architecture details and project vision.

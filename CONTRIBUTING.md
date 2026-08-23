@@ -11,6 +11,8 @@ Thank you for your interest in contributing! This guide walks you through adding
 
 **Read first:**
 - [PROJECT.md](PROJECT.md) - Understand the architecture and principles
+- [MAINTAINERS.md](MAINTAINERS.md) - Adding a device is an ongoing commitment, not a
+  one-time merge: releases rebuild it monthly, and it needs someone with the hardware
 - [ESPHome Documentation](https://esphome.io/) - Familiarize yourself with ESPHome
 
 ---
@@ -80,9 +82,6 @@ esphome:
   name: ${device_name}
   friendly_name: ${friendly_name}
   name_add_mac_suffix: true
-  project:
-    name: "heytcass.esphome-device-library"
-    version: !env_var FIRMWARE_VERSION dev
 
 packages:
   base: !include ../common/base.yaml
@@ -112,9 +111,11 @@ esp32_improv:
 
 **Key requirements:**
 - Base config: NO `http-ota.yaml` (for adopted devices)
+- Base config: no `esphome.project` either — `http-ota.yaml` adds it to the factory
+  config, and declaring it in both makes the two disagree
 - Factory config: Extends base + adds HTTP OTA, Improv, dashboard_import
 - Use `name_add_mac_suffix: true` for release builds
-- Set project version to `!env_var FIRMWARE_VERSION dev`
+- `dashboard_import` must point at the BASE config, not the factory one
 
 ### Step 3: Create the User Example
 
@@ -169,14 +170,18 @@ strategy:
       - examples/acme-smart-plug.yaml  # Add your device
 ```
 
-Add your device to `.github/workflows/build-firmware.yaml`:
+Add your device to `.github/workflows/build-firmware.yaml`. This matrix takes the
+**factory** config and needs the chip family, which becomes the `chipFamily` in the
+generated manifest:
 
 ```yaml
 strategy:
   matrix:
-    config:
-      - firmware/wyze-outdoor-plug.yaml
-      - firmware/acme-smart-plug.yaml  # Add your device
+    include:
+      - config: firmware/wyze-outdoor-plug.factory.yaml
+        chip_family: ESP32
+      - config: firmware/acme-smart-plug.factory.yaml  # Add your device
+        chip_family: ESP32
 ```
 
 ### Step 5: Test on Real Hardware
@@ -243,6 +248,8 @@ Before submitting:
 - [ ] All sensors/switches functioning
 - [ ] Follows DRY principle (no duplicated code)
 - [ ] Uses substitutions for calibration values
+- [ ] Listed in `MAINTAINERS.md` with someone who owns the hardware
+- [ ] No external components pinned to a moving ref (PR branches get force-pushed)
 
 ---
 

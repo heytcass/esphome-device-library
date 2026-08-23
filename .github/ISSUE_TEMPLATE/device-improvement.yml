@@ -1,0 +1,44 @@
+name: Device improvement
+description: Better calibration, an extra sensor, or a fix for a device already in the library
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Improvements to existing devices are the whole point of this library — a better
+        calibration curve here reaches every device running the firmware on the next
+        release, instead of being lost in a forum thread.
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device
+      options:
+        - Wyze Outdoor Plug
+        - Sonoff S31
+        - Seeed reTerminal E1002
+    validations:
+      required: true
+  - type: textarea
+    id: change
+    attributes:
+      label: What should change
+      description: Include current and proposed values for calibration changes.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: How you verified it
+      description: >
+        For calibration, what did you measure against (a reference meter, a known load)?
+        Values that have not been checked against something tend to make things worse for
+        everyone else.
+    validations:
+      required: true
+  - type: checkboxes
+    id: tested
+    attributes:
+      label: Before submitting
+      options:
+        - label: I have tested this on real hardware
+          required: true
