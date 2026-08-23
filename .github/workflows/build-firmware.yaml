@@ -20,6 +20,19 @@ on:
       - ".github/workflows/build-firmware.yaml"
   release:
     types: [published]
+  # Monthly rebuild against the current ESPHome release. If neither
+  # ESPHome nor this repo has changed since the last release, the run
+  # stops early instead of reflashing the fleet with identical firmware.
+  # Otherwise it publishes the next patch release automatically, so
+  # devices keep receiving current ESPHome without maintainer action.
+  #
+  # Timing: ESPHome ships X.Y.0 on the third Wednesday of each month
+  # (day 15-21), then patch releases over the following days. Running on
+  # the 28th puts us 7-13 days after every X.Y.0, so the fleet gets a
+  # settled release rather than day-one .0. The 28th is also the latest
+  # day present in every month, so no month is ever skipped.
+  schedule:
+    - cron: "17 7 28 * *"
   # Dispatching with a version (e.g. v3.0.0) runs the full release
   # pipeline: build, create the tag + GitHub Release with assets, and
   # deploy manifests to Pages. Without a version it's a plain test build.
@@ -32,10 +45,103 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  # Only supersede superseded PR runs; never cancel a release mid-publish.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # Decides, once per run, what version to build and whether to release.
+  # Keeping this out of the build matrix means the three device jobs and
+  # the deploy job can't disagree about the version.
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.decide.outputs.version }}
+      proceed: ${{ steps.decide.outputs.proceed }}
+      do_release: ${{ steps.decide.outputs.do_release }}
+      esphome_version: ${{ steps.esphome.outputs.version }}
+
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install ESPHome
+        run: pip install esphome
+
+      - name: Read ESPHome version
+        id: esphome
+        run: |
+          ESPHOME_VERSION=$(pip show esphome | awk '/^Version:/ {print $2}')
+          echo "version=${ESPHOME_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Building with ESPHome ${ESPHOME_VERSION}"
+
+      - name: Decide version and release intent
+        id: decide
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT: ${{ github.event_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          ESPHOME_VERSION: ${{ steps.esphome.outputs.version }}
+        run: |
+          set -euo pipefail
+          PROCEED=true
+          DO_RELEASE=false
+          VERSION="dev"
+
+          if [ "${EVENT}" = "release" ]; then
+            VERSION="${RELEASE_TAG}"
+            DO_RELEASE=true
+          elif [ "${EVENT}" = "workflow_dispatch" ] && [ -n "${INPUT_VERSION}" ]; then
+            VERSION="${INPUT_VERSION}"
+            DO_RELEASE=true
+          elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            VERSION="${GITHUB_REF_NAME}"
+            DO_RELEASE=true
+          elif [ "${EVENT}" = "schedule" ]; then
+            # What did the last release ship? build-info.json is written to
+            # GitHub Pages by the deploy job below.
+            PREV=$(gh api "repos/${GITHUB_REPOSITORY}/contents/build-info.json?ref=gh-pages" \
+              --jq '.content' 2>/dev/null | tr -d '\n' | base64 -d 2>/dev/null || echo '{}')
+            PREV_ESPHOME=$(echo "${PREV}" | jq -r '.esphome_version // empty')
+            PREV_COMMIT=$(echo "${PREV}" | jq -r '.source_commit // empty')
+
+            if [ "${PREV_ESPHOME}" = "${ESPHOME_VERSION}" ] && [ "${PREV_COMMIT}" = "${GITHUB_SHA}" ]; then
+              PROCEED=false
+              echo "No rebuild needed: ESPHome ${ESPHOME_VERSION} and source" \
+                "${GITHUB_SHA} both match the last release." >> "$GITHUB_STEP_SUMMARY"
+            else
+              LAST_TAG=$(gh release view --json tagName --jq '.tagName' 2>/dev/null || echo "")
+              if [ -z "${LAST_TAG}" ]; then
+                VERSION="v0.0.1"
+              else
+                BASE="${LAST_TAG#v}"
+                MAJOR="${BASE%%.*}"
+                REST="${BASE#*.}"
+                MINOR="${REST%%.*}"
+                PATCH="${REST#*.}"
+                # Drop any pre-release suffix (e.g. 3.0.1-rc1 -> 3.0.1).
+                PATCH="${PATCH%%-*}"
+                VERSION="v${MAJOR}.${MINOR}.$((PATCH + 1))"
+              fi
+              DO_RELEASE=true
+              {
+                echo "Rebuilding as ${VERSION}."
+                echo "- ESPHome: ${PREV_ESPHOME:-none} -> ${ESPHOME_VERSION}"
+                echo "- Source: ${PREV_COMMIT:-none} -> ${GITHUB_SHA}"
+              } >> "$GITHUB_STEP_SUMMARY"
+            fi
+          fi
+
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "proceed=${PROCEED}" >> "$GITHUB_OUTPUT"
+          echo "do_release=${DO_RELEASE}" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION} proceed=${PROCEED} do_release=${DO_RELEASE}"
+
   build:
+    needs: prepare
+    if: needs.prepare.outputs.proceed == 'true'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -56,8 +162,10 @@ jobs:
         with:
           python-version: '3.11'
 
+      # Pinned to the version prepare resolved, so a mid-run ESPHome
+      # release can't make the three devices build against different cores.
       - name: Install ESPHome
-        run: pip install esphome
+        run: pip install "esphome==${{ needs.prepare.outputs.esphome_version }}"
 
       - name: Create secrets.yaml
         run: |
@@ -69,23 +177,9 @@ jobs:
           ap_password: "test-ap-password"
           EOF
 
-      - name: Determine firmware version
-        id: version
-        run: |
-          if [ "${{ github.event_name }}" = "release" ]; then
-            VERSION="${{ github.event.release.tag_name }}"
-          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            VERSION="${{ github.ref_name }}"
-          elif [ -n "${{ inputs.version }}" ]; then
-            VERSION="${{ inputs.version }}"
-          else
-            VERSION="dev"
-          fi
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-
       - name: Compile firmware
         env:
-          FIRMWARE_VERSION: ${{ steps.version.outputs.version }}
+          FIRMWARE_VERSION: ${{ needs.prepare.outputs.version }}
         run: |
           # Strip 'v' prefix if present
           export FIRMWARE_VERSION="${FIRMWARE_VERSION#v}"
@@ -121,7 +215,7 @@ jobs:
           DEVICE_NAME="${{ steps.firmware.outputs.device_name }}"
           CHIP_FAMILY="${{ matrix.chip_family }}"
           MD5="${{ steps.md5.outputs.hash }}"
-          VERSION="${{ steps.version.outputs.version }}"
+          VERSION="${{ needs.prepare.outputs.version }}"
           VERSION="${VERSION#v}"
 
           cat > "${DEVICE_NAME}-manifest.json" << EOF
@@ -158,12 +252,9 @@ jobs:
           retention-days: 7
 
   deploy:
-    needs: build
+    needs: [prepare, build]
+    if: needs.prepare.outputs.do_release == 'true'
     runs-on: ubuntu-latest
-    if: >-
-      github.event_name == 'release' ||
-      startsWith(github.ref, 'refs/tags/') ||
-      (github.event_name == 'workflow_dispatch' && inputs.version != '')
     permissions:
       contents: write
 
@@ -178,14 +269,29 @@ jobs:
       - name: List downloaded files
         run: ls -la firmware/
 
+      # Records what this release was built from. The monthly rebuild
+      # reads it back to decide whether anything actually changed.
+      - name: Write build-info.json
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+          ESPHOME_VERSION: ${{ needs.prepare.outputs.esphome_version }}
+        run: |
+          jq -n \
+            --arg version "${VERSION#v}" \
+            --arg esphome_version "${ESPHOME_VERSION}" \
+            --arg source_commit "${GITHUB_SHA}" \
+            --arg built_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '$ARGS.named' > firmware/build-info.json
+          cat firmware/build-info.json
+
       # Creates the tag and GitHub Release if they don't exist yet
-      # (tag-push and dispatch-with-version flows), or adds assets to the
-      # existing release (release-published flow). Done here rather than
-      # per-matrix so the release is created once.
+      # (tag-push, dispatch-with-version and scheduled flows), or adds
+      # assets to the existing release (release-published flow). Done here
+      # rather than per-matrix so the release is created once.
       - name: Publish release with firmware assets
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.event.release.tag_name || inputs.version || github.ref_name }}
+          tag_name: ${{ needs.prepare.outputs.version }}
           generate_release_notes: true
           files: |
             firmware/*.bin
@@ -200,4 +306,46 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./firmware
           keep_files: false
-          commit_message: "Deploy firmware ${{ github.event.release.tag_name || inputs.version || github.ref_name }}"
+          commit_message: "Deploy firmware ${{ needs.prepare.outputs.version }}"
+
+  # A failed monthly rebuild is the maintainer's to-do list, so turn it
+  # into an issue instead of a red badge nobody is watching.
+  report-failure:
+    needs: [prepare, build, deploy]
+    if: failure() && github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - name: Open or update the rebuild-failure issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ESPHOME_VERSION: ${{ needs.prepare.outputs.esphome_version }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          gh label create automated-rebuild \
+            --description "Opened by the scheduled firmware rebuild" \
+            --color D93F0B 2>/dev/null || true
+
+          BODY=$(printf '%s\n' \
+            "The scheduled monthly firmware rebuild failed." \
+            "" \
+            "- ESPHome version: \`${ESPHOME_VERSION:-unknown}\`" \
+            "- Commit: \`${GITHUB_SHA}\`" \
+            "- Run: ${RUN_URL}" \
+            "" \
+            "Devices keep running their current firmware until this is fixed." \
+            "The usual cause is an upstream ESPHome change that a device" \
+            "config needs to catch up with.")
+
+          EXISTING=$(gh issue list --state open --label automated-rebuild \
+            --limit 1 --json number --jq '.[0].number // empty')
+
+          if [ -n "${EXISTING}" ]; then
+            gh issue comment "${EXISTING}" --body "${BODY}"
+          else
+            gh issue create --title "Monthly firmware rebuild failed" \
+              --label automated-rebuild --body "${BODY}"
+          fi
