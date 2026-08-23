@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: ESPHome documentation
+    url: https://esphome.io/
+    about: Reference for ESPHome components and configuration syntax.
+  - name: ESPHome device database
+    url: https://devices.esphome.io/
+    about: Community configs for devices this library does not build firmware for.
+  - name: Home Assistant community forum
+    url: https://community.home-assistant.io/c/esphome/
+    about: General ESPHome and Home Assistant questions, not specific to this library.
