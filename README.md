@@ -77,11 +77,13 @@ After initial setup, the device checks for updates every 6 hours.
 
 Releases happen two ways, and both run the same pipeline:
 
-- **Automatically, monthly.** On the 1st of each month CI rebuilds every device against the
+- **Automatically, monthly.** On the 28th of each month CI rebuilds every device against the
   current ESPHome release and publishes the next patch version, so devices keep receiving
-  ESPHome updates (security fixes included) without waiting on a maintainer. If neither
-  ESPHome nor this repo has changed since the last release, the run stops early rather than
-  reflashing your devices with identical firmware. If a rebuild fails, CI opens an issue.
+  ESPHome updates (security fixes included) without waiting on a maintainer. ESPHome ships
+  its monthly release on the third Wednesday, so the 28th lands a week or so later — after
+  the first round of patch releases, rather than on day-one `.0`. If neither ESPHome nor this
+  repo has changed since the last release, the run stops early rather than reflashing your
+  devices with identical firmware. If a rebuild fails, CI opens an issue.
 - **On demand.** Run the **Build Firmware** workflow with a version (e.g. `v3.1.0`), or push
   a `v*` tag. Use this for changes that shouldn't wait for the monthly train.
 

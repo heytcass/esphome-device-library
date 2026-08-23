@@ -74,9 +74,10 @@ Open for community contributions of additional devices:
 - Each device follows established patterns
 - Maintainers review for quality and DRY compliance
 
-**Releases are automated.** A monthly CI job rebuilds every device against the current
-ESPHome release and publishes the next patch version, skipping the release when nothing
-has changed and opening an issue when a rebuild breaks. This is what keeps the
+**Releases are automated.** A monthly CI job (the 28th, roughly a week after ESPHome's
+third-Wednesday release, so we pick up its early patch releases too) rebuilds every device
+against the current ESPHome release and publishes the next patch version, skipping the
+release when nothing has changed and opening an issue when a rebuild breaks. This is what keeps the
 "living configs" promise from depending on maintainer availability — see AUDIT.md for
 why that mattered. Releases can also be cut on demand by running the Build Firmware
 workflow with a version, or by pushing a `v*` tag.

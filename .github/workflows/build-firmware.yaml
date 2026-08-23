@@ -25,8 +25,14 @@ on:
   # stops early instead of reflashing the fleet with identical firmware.
   # Otherwise it publishes the next patch release automatically, so
   # devices keep receiving current ESPHome without maintainer action.
+  #
+  # Timing: ESPHome ships X.Y.0 on the third Wednesday of each month
+  # (day 15-21), then patch releases over the following days. Running on
+  # the 28th puts us 7-13 days after every X.Y.0, so the fleet gets a
+  # settled release rather than day-one .0. The 28th is also the latest
+  # day present in every month, so no month is ever skipped.
   schedule:
-    - cron: "17 7 1 * *"
+    - cron: "17 7 28 * *"
   # Dispatching with a version (e.g. v3.0.0) runs the full release
   # pipeline: build, create the tag + GitHub Release with assets, and
   # deploy manifests to Pages. Without a version it's a plain test build.
